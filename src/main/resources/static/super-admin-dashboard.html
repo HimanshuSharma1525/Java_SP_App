@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-email {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .user-role {
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-brand">🎯 Super Admin Dashboard</div>
+    <div class="navbar-user">
+        <div class="user-info">
+            <div class="user-email" id="userEmail">Loading...</div>
+            <div class="user-role">SUPER ADMIN</div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>Welcome, Super Admin</h1>
+        <p>Manage customer admins, tenants, and SSO configurations</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('customerAdmins')">Customer Admins</button>
+        <button class="tab" onclick="switchTab('ssoConfig')">SSO Configuration</button>
+    </div>
+
+    <!-- Customer Admins Tab -->
+    <div id="customerAdmins" class="tab-content active">
+        <div id="alertContainer"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Customer Admins</h2>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    + Add Customer Admin
+                </button>
+            </div>
+
+            <table id="customerAdminsTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Tenant/Subdomain</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="customerAdminsBody">
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        Loading customer admins...
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SSO Configuration Tab -->
+    <div id="ssoConfig" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">SSO Configuration</h2>
+                <p style="color: #666; font-size: 14px;">Configure SSO providers for the platform</p>
+            </div>
+
+            <div id="ssoConfigContent">
+                <p style="text-align: center; color: #999; padding: 40px;">
+                    SSO Configuration coming soon...
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Customer Admin Modal -->
+<div id="customerAdminModal" class="modal">
+    <div class="modal-content">
+        <h3 class="modal-header" id="modalTitle">Add Customer Admin</h3>
+        <form id="customerAdminForm">
+            <input type="hidden" id="userId">
+
+            <div class="form-group">
+                <label for="firstName">First Name *</label>
+                <input type="text" id="firstName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name *</label>
+                <input type="text" id="lastName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="tenantSubdomain">Tenant Subdomain *</label>
+                <input type="text" id="tenantSubdomain" placeholder="e.g., company1" required>
+                <small style="color: #666;">This will be the subdomain for this customer admin</small>
+            </div>
+
+            <div class="form-group" id="passwordGroup">
+                <label for="password">Password *</label>
+                <input type="password" id="password">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Check authentication
+    const token = localStorage.getItem('authToken');
+    const userRole = localStorage.getItem('userRole');
+    const userEmail = localStorage.getItem('userEmail');
+
+    if (!token || userRole !== 'SUPER_ADMIN') {
+        window.location.href = 'login.html';
+    }
+
+    document.getElementById('userEmail').textContent = userEmail;
+
+    // Load customer admins on page load
+    loadCustomerAdmins();
+
+    // Tab switching
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // Load customer admins
+    async function loadCustomerAdmins() {
+        try {
+            const response = await fetch('/api/super-admin/customer-admins', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const customerAdmins = await response.json();
+                displayCustomerAdmins(customerAdmins);
+            } else if (response.status === 401) {
+                logout();
+            } else {
+                showAlert('Failed to load customer admins', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading customer admins:', error);
+            showAlert('Network error while loading data', 'error');
+        }
+    }
+
+    function displayCustomerAdmins(customerAdmins) {
+        const tbody = document.getElementById('customerAdminsBody');
+
+        if (customerAdmins.length === 0) {
+            tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div>📋</div>
+                            <p>No customer admins yet. Click "Add Customer Admin" to create one.</p>
+                        </td>
+                    </tr>
+                `;
+            return;
+        }
+
+        tbody.innerHTML = customerAdmins.map(admin => `
+                <tr>
+                    <td>${admin.id}</td>
+                    <td>${admin.email}</td>
+                    <td>${admin.firstName} ${admin.lastName}</td>
+                    <td>
+                        <span class="badge badge-success">${admin.tenantSubdomain}</span>
+                    </td>
+                    <td>
+                        <span class="badge ${admin.active ? 'badge-success' : 'badge-danger'}">
+                            ${admin.active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-small btn-success" onclick="editCustomerAdmin(${admin.id})">
+                                Edit
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteCustomerAdmin(${admin.id})">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Add Customer Admin';
+        document.getElementById('customerAdminForm').reset();
+        document.getElementById('userId').value = '';
+        document.getElementById('passwordGroup').style.display = 'block';
+        document.getElementById('password').required = true;
+        document.getElementById('email').readOnly = false;
+        document.getElementById('tenantSubdomain').readOnly = false;
+        document.getElementById('customerAdminModal').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('customerAdminModal').classList.remove('show');
+    }
+
+    // Handle form submission
+    document.getElementById('customerAdminForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userId = document.getElementById('userId').value;
+        const isEdit = userId !== '';
+
+        const formData = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            tenantSubdomain: document.getElementById('tenantSubdomain').value,
+            role: 'CUSTOMER_ADMIN'
+        };
+
+        if (!isEdit) {
+            formData.password = document.getElementById('password').value;
+        }
+
+        try {
+            const url = isEdit
+                ? `/api/super-admin/users/${userId}`
+                : '/api/super-admin/customer-admins';
+
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                showAlert(`Customer admin ${isEdit ? 'updated' : 'created'} successfully!`, 'success');
+                closeModal();
+                loadCustomerAdmins();
+            } else {
+                const error = await response.json();
+                showAlert(error.error || 'Operation failed', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Network error', 'error');
+        }
+    });
+
+    async function editCustomerAdmin(userId) {
+        // For simplicity, we'll just allow editing name
+        // In a real app, you'd fetch the user details first
+        document.getElementById('modalTitle').textContent = 'Edit Customer Admin';
+        document.getElementById('userId').value = userId;
+        document.getElementById('passwordGroup').style.display = 'none';
+        document.getElementById('password').required = false;
+        document.getElementById('email').readOnly = true;
+        document.getElementById('tenantSubdomain').readOnly = true;
+        document.getElementById('customerAdminModal').classList.add('show');
+    }
+
+    async function deleteCustomerAdmin(userId) {
+        if (!confirm('Are you sure you want to delete this customer admin?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/super-admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                showAlert('Customer admin deleted successfully!', 'success');
+                loadCustomerAdmins();
+            } else {
+                showAlert('Failed to delete customer admin', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Network error', 'error');
+        }
+    }
+
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+
+        alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+
+        setTimeout(() => {
+            alertContainer.innerHTML = '';
+        }, 5000);
+    }
+
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userEmail');
+        window.location.href = 'login.html';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('customerAdminModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+</body>
+</html>

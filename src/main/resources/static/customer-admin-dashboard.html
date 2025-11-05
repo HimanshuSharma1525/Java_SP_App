@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-email {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .user-role {
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: white;
+            color: #43e97b;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #43e97b;
+            border-bottom-color: #43e97b;
+        }
+
+        .tab:hover {
+            color: #43e97b;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 233, 123, 0.3);
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #43e97b;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #43e97b;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-brand">👥 Customer Admin Dashboard</div>
+    <div class="navbar-user">
+        <div class="user-info">
+            <div class="user-email" id="userEmail">Loading...</div>
+            <div class="user-role">CUSTOMER ADMIN</div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>Welcome, Customer Admin</h1>
+        <p>Manage your end users and SSO configurations</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalUsers">0</div>
+            <div class="stat-label">Total End Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="activeUsers">0</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('endUsers')">End Users</button>
+        <button class="tab" onclick="window.location.href='/sso-settings.html'">SSO Configuration</button>
+    </div>
+
+    <!-- End Users Tab -->
+    <div id="endUsers" class="tab-content active">
+        <div id="alertContainer"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">End Users</h2>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    + Add End User
+                </button>
+            </div>
+
+            <table id="endUsersTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="endUsersBody">
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        Loading end users...
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SSO Configuration Tab -->
+    <div id="ssoConfig" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">SSO Configuration</h2>
+                <p style="color: #666; font-size: 14px;">Configure SSO providers for your organization</p>
+            </div>
+
+            <div id="ssoConfigContent">
+                <p style="text-align: center; color: #999; padding: 40px;">
+                    SSO Configuration coming soon...
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit End User Modal -->
+<div id="endUserModal" class="modal">
+    <div class="modal-content">
+        <h3 class="modal-header" id="modalTitle">Add End User</h3>
+        <form id="endUserForm">
+            <input type="hidden" id="userId">
+
+            <div class="form-group">
+                <label for="firstName">First Name *</label>
+                <input type="text" id="firstName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name *</label>
+                <input type="text" id="lastName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="form-group" id="passwordGroup">
+                <label for="password">Password *</label>
+                <input type="password" id="password">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Check authentication
+    const token = localStorage.getItem('authToken');
+    const userRole = localStorage.getItem('userRole');
+    const userEmail = localStorage.getItem('userEmail');
+
+    if (!token || (userRole !== 'CUSTOMER_ADMIN' && userRole !== 'SUPER_ADMIN')) {
+        window.location.href = 'login.html';
+    }
+
+    document.getElementById('userEmail').textContent = userEmail;
+
+    // Load end users on page load
+    loadEndUsers();
+
+    // Tab switching
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // Load end users
+    async function loadEndUsers() {
+        try {
+            const response = await fetch('/api/customer-admin/end-users', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const endUsers = await response.json();
+                displayEndUsers(endUsers);
+                updateStats(endUsers);
+            } else if (response.status === 401) {
+                logout();
+            } else {
+                showAlert('Failed to load end users', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading end users:', error);
+            showAlert('Network error while loading data', 'error');
+        }
+    }
+
+    function displayEndUsers(endUsers) {
+        const tbody = document.getElementById('endUsersBody');
+
+        if (endUsers.length === 0) {
+            tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div>👤</div>
+                            <p>No end users yet. Click "Add End User" to create one.</p>
+                        </td>
+                    </tr>
+                `;
+            return;
+        }
+
+        tbody.innerHTML = endUsers.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.email}</td>
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>
+                        <span class="badge ${user.active ? 'badge-success' : 'badge-danger'}">
+                            ${user.active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>${new Date().toLocaleDateString()}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-small btn-success" onclick="editEndUser(${user.id})">
+                                Edit
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteEndUser(${user.id})">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    function updateStats(endUsers) {
+        document.getElementById('totalUsers').textContent = endUsers.length;
+        const activeCount = endUsers.filter(u => u.active).length;
+        document.getElementById('activeUsers').textContent = activeCount;
+    }
+
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = 'Add End User';
+        document.getElementById('endUserForm').reset();
+        document.getElementById('userId').value = '';
+        document.getElementById('passwordGroup').style.display = 'block';
+        document.getElementById('password').required = true;
+        document.getElementById('email').readOnly = false;
+        document.getElementById('endUserModal').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('endUserModal').classList.remove('show');
+    }
+
+    // Handle form submission
+    document.getElementById('endUserForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userId = document.getElementById('userId').value;
+        const isEdit = userId !== '';
+
+        const formData = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            role: 'END_USER'
+        };
+
+        if (!isEdit) {
+            formData.password = document.getElementById('password').value;
+        }
+
+        try {
+            const url = isEdit
+                ? `/api/customer-admin/end-users/${userId}`
+                : '/api/customer-admin/end-users';
+
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                showAlert(`End user ${isEdit ? 'updated' : 'created'} successfully!`, 'success');
+                closeModal();
+                loadEndUsers();
+            } else {
+                const error = await response.json();
+                showAlert(error.error || 'Operation failed', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Network error', 'error');
+        }
+    });
+
+    async function editEndUser(userId) {
+        document.getElementById('modalTitle').textContent = 'Edit End User';
+        document.getElementById('userId').value = userId;
+        document.getElementById('passwordGroup').style.display = 'none';
+        document.getElementById('password').required = false;
+        document.getElementById('email').readOnly = true;
+        document.getElementById('endUserModal').classList.add('show');
+    }
+
+    async function deleteEndUser(userId) {
+        if (!confirm('Are you sure you want to delete this end user?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/customer-admin/end-users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                showAlert('End user deleted successfully!', 'success');
+                loadEndUsers();
+            } else {
+                showAlert('Failed to delete end user', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Network error', 'error');
+        }
+    }
+
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+
+        alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+
+        setTimeout(() => {
+            alertContainer.innerHTML = '';
+        }, 5000);
+    }
+
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userEmail');
+        window.location.href = 'login.html';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('endUserModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+</body>
+</html>

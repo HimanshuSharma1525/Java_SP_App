@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Multi-Tenant Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .subdomain-info {
+            background: #f0f4ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .sso-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn-sso {
+            background: white;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+        }
+
+        .btn-sso:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-jwt { border-color: #4CAF50; }
+        .btn-jwt:hover { border-color: #4CAF50; background: #e8f5e9; }
+
+        .btn-saml { border-color: #2196F3; }
+        .btn-saml:hover { border-color: #2196F3; background: #e3f2fd; }
+
+        .btn-oauth { border-color: #FF9800; }
+        .btn-oauth:hover { border-color: #FF9800; background: #fff3e0; }
+
+        .sso-icon { width: 24px; height: 24px; font-weight: bold; }
+
+        .register-link { text-align: center; margin-top: 20px; color: #666; }
+        .register-link a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .register-link a:hover { text-decoration: underline; }
+
+        .error-message, .success-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message { background: #ffebee; color: #c62828; }
+        .success-message { background: #e8f5e9; color: #2e7d32; }
+
+        .loading { display: none; text-align: center; padding: 20px; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="logo"><h1>🔐 Login</h1></div>
+    <div class="subdomain-info" id="subdomainInfo">Loading subdomain...</div>
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage"></div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Enter your password">
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+
+    <div class="divider"><span>OR CONTINUE WITH</span></div>
+    <div class="sso-buttons" id="ssoButtons">
+        <!-- SSO buttons will be dynamically added here -->
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px; color: #666;">Processing...</p>
+    </div>
+
+    <div class="register-link">
+        Don't have an account? <a href="register.html">Register here</a>
+    </div>
+</div>
+
+<script>
+    const hostname = window.location.hostname;
+    const subdomain = hostname.split('.')[0];
+    document.getElementById('subdomainInfo').textContent = `Tenant: ${subdomain}`;
+
+    async function loadSSOProviders() {
+        try {
+            const response = await fetch('/api/sso/providers');
+            const data = await response.json(); // data is ["JWT", "SAML", "OAUTH"]
+            const ssoButtons = document.getElementById('ssoButtons');
+            ssoButtons.innerHTML = '';
+
+            if (data && data.length > 0) {
+                data.forEach(provider => {
+                    const button = createSSOButton(provider);
+                    ssoButtons.appendChild(button);
+                });
+            } else {
+                ssoButtons.innerHTML = '<p style="text-align: center; color: #999;">No SSO providers configured</p>';
+            }
+        } catch (error) {
+            console.error('Error loading SSO providers:', error);
+            document.getElementById('ssoButtons').innerHTML =
+                '<p style="text-align: center; color: #c62828;">Failed to load SSO providers</p>';
+        }
+    }
+
+    function createSSOButton(provider) {
+        const button = document.createElement('button');
+        button.className = `btn btn-sso btn-${provider.toLowerCase()}`;
+        button.onclick = () => handleSSOLogin(provider);
+
+        const icons = { JWT: '🔑', SAML: '🔐', OAUTH: '🌐' };
+        button.innerHTML = `<span class="sso-icon">${icons[provider] || '🔒'}</span>
+                            <span>Login with ${provider}</span>`;
+        return button;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        showLoading(); hideMessages();
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('userRole', data.role);
+                localStorage.setItem('userEmail', data.email);
+
+                showSuccess('Login successful! Redirecting...');
+
+                let redirectUrl = '/end-user-dashboard.html';
+                if (data.role === 'SUPER_ADMIN') redirectUrl = '/super-admin-dashboard.html';
+                else if (data.role === 'CUSTOMER_ADMIN') redirectUrl = '/customer-admin-dashboard.html';
+
+                setTimeout(() => { window.location.href = redirectUrl; }, 500);
+            } else {
+                const errorData = await response.json();
+                showError(errorData.error || 'Login failed. Please check your credentials.');
+            }
+        } catch (error) {
+            showError('Network error. Please try again.');
+            console.error('Login error:', error);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    async function handleSSOLogin(provider) {
+        showLoading(); hideMessages();
+        if (provider === 'JWT') window.location.href = '/sso/jwt/login';
+        else if (provider === 'SAML') window.location.href = '/sso/saml/login';
+        else if (provider === 'OAUTH') window.location.href = '/sso/oauth/login';
+    }
+
+    window.addEventListener('load', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const error = urlParams.get('error');
+
+        if (token) {
+            localStorage.setItem('authToken', token);
+            fetch('/api/end-user/profile', { headers: { 'Authorization': `Bearer ${token}` } })
+                .then(res => res.json())
+                .then(data => {
+                    localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('userRole', data.role || 'END_USER');
+                    const role = data.role || 'END_USER';
+                    if (role === 'SUPER_ADMIN') window.location.href = '/super-admin-dashboard.html';
+                    else if (role === 'CUSTOMER_ADMIN') window.location.href = '/customer-admin-dashboard.html';
+                    else window.location.href = '/end-user-dashboard.html';
+                })
+                .catch(err => { showError('SSO authentication successful but unable to load profile'); loadSSOProviders(); });
+        } else if (error) {
+            const errorMessages = {
+                'jwt_not_configured': 'JWT SSO is not configured',
+                'jwt_disabled': 'JWT SSO is disabled',
+                'invalid_signature': 'Invalid JWT signature',
+                'invalid_token': 'Invalid JWT token',
+                'saml_not_configured': 'SAML SSO is not configured',
+                'invalid_saml_response': 'Invalid SAML response',
+                'oauth_not_configured': 'OAuth SSO is not configured',
+                'tenant_mismatch': 'User does not belong to this tenant'
+            };
+            showError(errorMessages[error] || 'SSO authentication failed');
+            loadSSOProviders();
+        } else {
+            loadSSOProviders();
+        }
+    });
+
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('ssoButtons').style.display = 'none';
+    }
+    function hideLoading() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('ssoButtons').style.display = 'flex';
+    }
+    function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+    function showSuccess(message) {
+        const successDiv = document.getElementById('successMessage');
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+    }
+    function hideMessages() {
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('successMessage').style.display = 'none';
+    }
+</script>
+</body>
+</html>
