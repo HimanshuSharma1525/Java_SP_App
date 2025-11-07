@@ -1,4 +1,3 @@
-// TenantService.java
 package com.yourcompany.multitenant.service;
 
 import com.yourcompany.multitenant.config.TenantContext;
@@ -8,6 +7,7 @@ import com.yourcompany.multitenant.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -34,6 +34,11 @@ public class TenantService {
                 .orElseThrow(() -> new TenantNotFoundException("Tenant not found: " + subdomain));
     }
 
+    @Transactional(readOnly = true)
+    public java.util.Optional<Tenant> getTenantBySubdomainOptional(String subdomain) {
+        return tenantRepository.findBySubdomain(subdomain);
+    }
+
     @Transactional
     public Tenant createTenant(String subdomain, String name) {
         if (tenantRepository.findBySubdomain(subdomain).isPresent()) {
@@ -47,6 +52,13 @@ public class TenantService {
                 .build();
 
         return tenantRepository.save(tenant);
+    }
+
+    // ✅ New method: create tenant in a new transaction
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Tenant createTenantInNewTransaction(String subdomain, String name) {
+        log.info("Creating tenant in new transaction: {}", subdomain);
+        return createTenant(subdomain, name);
     }
 
     @Transactional

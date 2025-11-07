@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -27,62 +28,86 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
+                .headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives(
+                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https: data: blob:;")))
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configure(http))
+                .cors(cors -> cors.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public pages and static resources
+                        // --- Public resources ---
                         .requestMatchers(
-                                "/",
-                                "/login.html",
-                                "/register.html",
-                                "/*.html",
-                                "/*.css",
-                                "/*.js",
-                                "/static/**",
-                                "/public/**",
-                                "/sso/jwt/**",
-                                "sso/saml/**"
+                                new AntPathRequestMatcher("/"),
+                                new AntPathRequestMatcher("/favicon.ico"),
+                                new AntPathRequestMatcher("/login.html"),
+                                new AntPathRequestMatcher("/register.html"),
+                                new AntPathRequestMatcher("/index.html"),
+                                new AntPathRequestMatcher("/static/**"),
+                                new AntPathRequestMatcher("/public/**"),
+                                new AntPathRequestMatcher("/**/*.js"),
+                                new AntPathRequestMatcher("/**/*.css"),
+                                new AntPathRequestMatcher("/**/*.html")
                         ).permitAll()
-                        // Authentication API
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // Public SSO fetch
-                        .requestMatchers("/api/sso/providers").permitAll()
-                        // SSO endpoints (other than providers)
-                        .requestMatchers("/api/sso/**").authenticated()
-                        .requestMatchers("/sso/**").permitAll() // callbacks
-                        // Role-based endpoints
-                        .requestMatchers("/api/super-admin/**").hasAuthority("SUPER_ADMIN")
-                        .requestMatchers("/api/customer-admin/**").hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN")
-                        .requestMatchers("/api/end-user/**").hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN", "END_USER")
-                        // Dashboard HTML pages
-                        .requestMatchers("/super-admin-dashboard.html").hasAuthority("SUPER_ADMIN")
-                        .requestMatchers("/customer-admin-dashboard.html").hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN")
-                        .requestMatchers("/end-user-dashboard.html").hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN", "END_USER")
-                        // All others require authentication
+
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/sso/jwt/**"),
+                                new AntPathRequestMatcher("/sso/saml/**"),
+                                new AntPathRequestMatcher("/sso/oauth/**")
+                        ).permitAll()
+
+                        // --- Auth APIs ---
+                        .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/sso/providers")).permitAll()
+
+                        // --- SSO Routes ---
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/sso/jwt/**"),
+                                new AntPathRequestMatcher("/sso/saml/**"),
+                                new AntPathRequestMatcher("/sso/oauth/**"),
+                                new AntPathRequestMatcher("/api/sso/**")
+                        ).permitAll()
+
+                        .requestMatchers(new AntPathRequestMatcher("/api/super-admin/**")).hasAuthority("SUPER_ADMIN")
+
+
+                        // --- Dashboards ---
+                        .requestMatchers(new AntPathRequestMatcher("/super-admin-dashboard.html"))
+                        .hasAuthority("SUPER_ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/customer-admin-dashboard.html"))
+                        .hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/end-user-dashboard.html"))
+                        .hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN", "END_USER")
+
+                        // --- Role-specific REST APIs ---
+                        .requestMatchers(new AntPathRequestMatcher("/api/super-admin/**"))
+                        .hasAuthority("SUPER_ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/api/customer-admin/**"))
+                        .hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/api/end-user/**"))
+                        .hasAnyAuthority("SUPER_ADMIN", "CUSTOMER_ADMIN", "END_USER")
+
+                        // --- Everything else requires authentication ---
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(daoAuthenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     @Bean

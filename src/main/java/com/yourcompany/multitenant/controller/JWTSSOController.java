@@ -1,18 +1,15 @@
-// JWTSSOController.java
 package com.yourcompany.multitenant.controller;
 
-import com.yourcompany.multitenant.model.SSOConfig;
-import com.yourcompany.multitenant.model.SSOProvider;
-import com.yourcompany.multitenant.model.Tenant;
-import com.yourcompany.multitenant.model.User;
-import com.yourcompany.multitenant.repository.SSOConfigRepository;
-import com.yourcompany.multitenant.repository.UserRepository;
-import com.yourcompany.multitenant.service.TenantService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
+import com.yourcompany.multitenant.model.*;
+import com.yourcompany.multitenant.repository.SSOConfigRepository;
+import com.yourcompany.multitenant.repository.UserRepository;
+import com.yourcompany.multitenant.security.JwtTokenProvider;
+import com.yourcompany.multitenant.service.TenantService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +20,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Collections;
-import java.util.Optional;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.interfaces.RSAPublicKey;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 @Slf4j
 @Controller
@@ -32,142 +33,128 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JWTSSOController {
 
-    private final UserRepository userRepository;
-    private final SSOConfigRepository ssoConfigRepository;
     private final TenantService tenantService;
+    private final SSOConfigRepository ssoConfigRepository;
+    private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    // Step 1: Redirect user to miniOrange JWT App login
     @GetMapping("/login")
-    public String redirectToSSO() {
-        try {
-            Tenant tenant = tenantService.getCurrentTenant();
-            Optional<SSOConfig> configOpt = ssoConfigRepository.findByTenantAndProvider(tenant, SSOProvider.JWT);
+    public String redirectToJWT() {
+        final Tenant tenant = tenantService.getCurrentTenant();
+        Optional<SSOConfig> cfgOpt = ssoConfigRepository.findByTenantAndProvider(tenant, SSOProvider.JWT);
 
-            if (configOpt.isEmpty() || !configOpt.get().getEnabled() || configOpt.get().getJwtTokenEndpoint() == null) {
-                return "redirect:/login.html?error=jwt_not_configured";
-            }
-
-            return "redirect:" + configOpt.get().getJwtTokenEndpoint();
-        } catch (Exception e) {
-            log.error("Error redirecting to JWT SSO", e);
-            return "redirect:/login.html?error=jwt_error";
+        if (cfgOpt.isEmpty() || !Boolean.TRUE.equals(cfgOpt.get().getEnabled()) || cfgOpt.get().getJwtUrl() == null) {
+            return "redirect:/login.html?error=jwt_not_configured";
         }
+
+        return "redirect:" + cfgOpt.get().getJwtUrl();
     }
 
-    // Step 2: Handle JWT callback from miniOrange
     @GetMapping({"/callback", "/callback/**", "/callback*"})
-    public String handleSSOCallback(HttpServletRequest request) throws Exception {
-        Tenant tenant = tenantService.getCurrentTenant();
-        Optional<SSOConfig> configOpt = ssoConfigRepository.findByTenantAndProvider(tenant, SSOProvider.JWT);
+    public String jwtCallback(HttpServletRequest request) {
+        try {
+            final Tenant tenant = tenantService.getCurrentTenant();
+            final SSOConfig cfg = ssoConfigRepository.findByTenantAndProvider(tenant, SSOProvider.JWT)
+                    .orElse(null);
 
-        if (configOpt.isEmpty() || !configOpt.get().getEnabled()) {
-            return "redirect:/login.html?error=jwt_disabled";
-        }
-
-        SSOConfig config = configOpt.get();
-        String jwtSecret = config.getJwtSecret();
-        String publicKeyPEM = config.getJwtCertificate();
-
-        String idToken = request.getParameter("id_token");
-
-        // Extract token from URL if not in query param
-        if (idToken == null || idToken.isEmpty()) {
-            String requestURI = request.getRequestURI();
-            if (requestURI.contains("/sso/jwt/callback")) {
-                idToken = requestURI.substring(requestURI.indexOf("/sso/jwt/callback") + "/sso/jwt/callback".length());
-                if (idToken.startsWith("/")) idToken = idToken.substring(1);
+            if (cfg == null || !Boolean.TRUE.equals(cfg.getEnabled())) {
+                return "redirect:/login.html?error=jwt_disabled";
             }
+
+            String idToken = Optional.ofNullable(request.getParameter("id_token")).orElseGet(() -> {
+                String uri = request.getRequestURI();
+                String prefix = "/sso/jwt/callback";
+                if (uri.contains(prefix)) {
+                    String tail = uri.substring(uri.indexOf(prefix) + prefix.length());
+                    if (tail.startsWith("/")) tail = tail.substring(1);
+                    return tail;
+                }
+                return null;
+            });
+
+            if (idToken == null || idToken.isBlank()) {
+                return "redirect:/login.html?error=missing_token";
+            }
+
+            SignedJWT signed = SignedJWT.parse(idToken);
+            String alg = signed.getHeader().getAlgorithm().getName();
+
+            boolean verified;
+            if ("RS256".equalsIgnoreCase(alg) && cfg.getJwtCertificate() != null && !cfg.getJwtCertificate().isBlank()) {
+                verified = verifyRS256WithX509(signed, cfg.getJwtCertificate());
+            } else {
+                verified = verifyHS256(signed, cfg.getJwtSecret());
+            }
+
+            if (!verified) {
+                return "redirect:/login.html?error=invalid_signature";
+            }
+
+            var claims = signed.getJWTClaimsSet();
+            String email = Optional.ofNullable(claims.getStringClaim("email")).orElse(claims.getSubject());
+
+            if (email == null || email.isBlank()) {
+                return "redirect:/login.html?error=invalid_token";
+            }
+
+            String firstName = optString(claims.getStringClaim("first_name"));
+            String lastName  = optString(claims.getStringClaim("last_name"));
+
+            final User user = userRepository.findByEmailAndTenant(email, tenant).orElseGet(() -> {
+                User u = User.builder()
+                        .email(email)
+                        .firstName(firstName.isBlank() ? "SSO" : firstName)
+                        .lastName(lastName.isBlank() ? "User" : lastName)
+                        .password("{noop}SSO_USER")
+                        .role(Role.END_USER)
+                        .active(true)
+                        .tenant(tenant)
+                        .build();
+                return userRepository.save(u);
+            });
+
+            String appToken = jwtTokenProvider.generateToken(
+                    user.getId(), user.getEmail(), user.getRole(), tenant.getId()
+            );
+
+            var auth = new UsernamePasswordAuthenticationToken(
+                    user.getEmail(), null, List.of(new SimpleGrantedAuthority(user.getRole().name()))
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            // ✅ Change here: redirect to login.html with token, not directly to dashboard
+            return "redirect:/login.html?token=" + URLEncoder.encode(appToken, StandardCharsets.UTF_8);
+
+        } catch (Exception e) {
+            log.error("JWT SSO callback error", e);
+            return "redirect:/login.html?error=jwt_failed";
         }
-
-        if (idToken == null || idToken.isEmpty()) return "redirect:/login.html?error=missing_token";
-
-        SignedJWT signedJWT = SignedJWT.parse(idToken);
-        String alg = signedJWT.getHeader().getAlgorithm().getName();
-
-        boolean verified;
-        if ("RS256".equalsIgnoreCase(alg) && publicKeyPEM != null && !publicKeyPEM.isBlank()) {
-            verified = verifyRS256(signedJWT, publicKeyPEM);
-        } else {
-            verified = verifyHS256(signedJWT, jwtSecret);
-        }
-
-        if (!verified) return "redirect:/login.html?error=invalid_signature";
-
-        var claims = signedJWT.getJWTClaimsSet();
-        String email = claims.getStringClaim("email");
-        String firstName = claims.getStringClaim("first_name");
-        String lastName = claims.getStringClaim("last_name");
-        String name = ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
-
-        if (email == null || email.isBlank()) return "redirect:/login.html?error=invalid_token";
-
-        // Create user iff doesn’t exist
-        Optional<User> existingUser = userRepository.findByEmail(email);
-        User user = existingUser.orElseGet(() -> {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setPassword("SSO_USER");
-            newUser.setFirstName(firstName.isEmpty() ? "SSO User" : name);
-            newUser.setLastName(lastName.isEmpty() ? "SSO User" : lastName);
-            newUser.setTenant(tenant);
-            return userRepository.save(newUser);
-        });
-
-        // Set Spring Security context
-        var auth = new UsernamePasswordAuthenticationToken(
-                user.getEmail(), null,
-                Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()))
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        // Store info in session
-        request.getSession().setAttribute("userEmail", user.getEmail());
-        request.getSession().setAttribute("userRole", user.getRole().name());
-        request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-        // Redirect based on role
-        String dashboardUrl = switch (user.getRole()) {
-            case SUPER_ADMIN -> "/super-admin-dashboard.html";
-            case CUSTOMER_ADMIN -> "/customer-admin-dashboard.html";
-            case END_USER -> "/end-user-dashboard.html";
-        };
-
-        return "redirect:" + dashboardUrl;
     }
 
-    // Verify RS256 using PEM-formatted public key
-    private boolean verifyRS256(SignedJWT signedJWT, String certificatePEM) {
+
+    private boolean verifyHS256(SignedJWT jwt, String secret) throws JOSEException {
+        if (secret == null || secret.isBlank()) return false;
+        JWSVerifier verifier = new MACVerifier(secret.getBytes(StandardCharsets.UTF_8));
+        return jwt.verify(verifier);
+    }
+
+    private boolean verifyRS256WithX509(SignedJWT jwt, String certificatePEM) {
         try {
-            certificatePEM = certificatePEM.replace("\\n", "\n").replace("\r", "").trim();
-            String cleanedPem = certificatePEM
-                    .replace("-----BEGIN CERTIFICATE-----", "")
+            String pem = certificatePEM.replace("\\n", "\n").trim();
+            String cleaned = pem.replace("-----BEGIN CERTIFICATE-----", "")
                     .replace("-----END CERTIFICATE-----", "")
                     .replaceAll("\\s+", "");
-            byte[] decoded = java.util.Base64.getDecoder().decode(cleanedPem);
-            java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");
-            java.io.ByteArrayInputStream inputStream = new java.io.ByteArrayInputStream(decoded);
-            java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate) cf.generateCertificate(inputStream);
-
-            JWSVerifier verifier = new RSASSAVerifier((java.security.interfaces.RSAPublicKey) cert.getPublicKey());
-            return signedJWT.verify(verifier);
+            byte[] decoded = Base64.getDecoder().decode(cleaned);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate) cf.generateCertificate(new java.io.ByteArrayInputStream(decoded));
+            RSAPublicKey publicKey = (RSAPublicKey) cert.getPublicKey();
+            JWSVerifier verifier = new RSASSAVerifier(publicKey);
+            return jwt.verify(verifier);
         } catch (Exception e) {
-            log.error("❌ Failed to verify RS256 token", e);
+            log.error("RS256 X509 verification failed", e);
             return false;
         }
     }
 
-    // Verify HS256 using shared secret
-    private boolean verifyHS256(SignedJWT signedJWT, String secret) {
-        try {
-            if (secret == null || secret.isBlank()) {
-                log.error("❌ HS256 secret missing!");
-                return false;
-            }
-            JWSVerifier verifier = new MACVerifier(secret.getBytes());
-            return signedJWT.verify(verifier);
-        } catch (JOSEException e) {
-            log.error("❌ Failed to verify HS256 token", e);
-            return false;
-        }
-    }
+    private static String optString(String s) { return s == null ? "" : s; }
 }

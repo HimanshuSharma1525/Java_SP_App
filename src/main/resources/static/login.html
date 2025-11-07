@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Multi-Tenant Application</title>
     <style>
@@ -232,17 +234,20 @@
     async function loadSSOProviders() {
         try {
             const response = await fetch('/api/sso/providers');
-            const data = await response.json(); // data is ["JWT", "SAML", "OAUTH"]
+            const data = await response.json();
             const ssoButtons = document.getElementById('ssoButtons');
             ssoButtons.innerHTML = '';
 
-            if (data && data.length > 0) {
-                data.forEach(provider => {
-                    const button = createSSOButton(provider);
+            const enabledProviders = data.filter(p => p.enabled); // 👈 only show enabled ones
+
+            if (enabledProviders.length > 0) {
+                enabledProviders.forEach(p => {
+                    const button = createSSOButton(p.provider, p.enabled, p.loginUrl);
                     ssoButtons.appendChild(button);
                 });
             } else {
-                ssoButtons.innerHTML = '<p style="text-align: center; color: #999;">No SSO providers configured</p>';
+                ssoButtons.innerHTML =
+                    '<p style="text-align: center; color: #999;">No SSO providers enabled for this tenant</p>';
             }
         } catch (error) {
             console.error('Error loading SSO providers:', error);
@@ -251,16 +256,15 @@
         }
     }
 
-    function createSSOButton(provider) {
+    function createSSOButton(provider, enabled, loginUrl) {
         const button = document.createElement('button');
         button.className = `btn btn-sso btn-${provider.toLowerCase()}`;
-        button.onclick = () => handleSSOLogin(provider);
-
-        const icons = { JWT: '🔑', SAML: '🔐', OAUTH: '🌐' };
-        button.innerHTML = `<span class="sso-icon">${icons[provider] || '🔒'}</span>
-                            <span>Login with ${provider}</span>`;
+        button.innerHTML = `<span class="sso-icon">${provider === 'JWT' ? '🔑' : provider === 'SAML' ? '🔐' : '🌐'}</span>
+                        <span>Login with ${provider}</span>`;
+        button.onclick = () => window.location.href = loginUrl;
         return button;
     }
+
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();

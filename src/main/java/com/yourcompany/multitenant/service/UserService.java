@@ -1,4 +1,3 @@
-// UserService.java
 package com.yourcompany.multitenant.service;
 
 import com.yourcompany.multitenant.dto.CreateUserRequest;
@@ -12,8 +11,11 @@ import com.yourcompany.multitenant.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +28,6 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserDTO> getAllCustomerAdmins() {
-        // Only SUPER_ADMIN can call this
         List<User> customerAdmins = userRepository.findAll().stream()
                 .filter(u -> u.getRole() == Role.CUSTOMER_ADMIN)
                 .collect(Collectors.toList());
@@ -38,7 +39,6 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserDTO> getEndUsersByTenant() {
-        // CUSTOMER_ADMIN calls this to get their end users
         Tenant tenant = tenantService.getCurrentTenant();
         List<User> endUsers = userRepository.findByTenantAndRole(tenant, Role.END_USER);
 
@@ -49,27 +49,27 @@ public class UserService {
 
     @Transactional
     public UserDTO createCustomerAdmin(CreateUserRequest request) {
-        // Only SUPER_ADMIN can create CUSTOMER_ADMIN
-        if (request.getTenantSubdomain() == null) {
+        if (request.getTenantSubdomain() == null || request.getTenantSubdomain().isEmpty()) {
             throw new IllegalArgumentException("Tenant subdomain is required for customer admin");
         }
 
-        // Create or get tenant
-        Tenant tenant;
-        try {
-            tenant = tenantService.getTenantBySubdomain(request.getTenantSubdomain());
-        } catch (Exception e) {
-            // Create new tenant if doesn't exist
-            tenant = tenantService.createTenant(
-                    request.getTenantSubdomain(),
-                    request.getTenantSubdomain() + " Organization"
-            );
-        }
+        // 1️⃣ Check if tenant exists
+        Optional<Tenant> tenantOpt = tenantService.getTenantBySubdomainOptional(request.getTenantSubdomain());
 
+        // 2️⃣ Create tenant if not exists
+        Tenant tenant = tenantOpt.orElseGet(() ->
+                tenantService.createTenantInNewTransaction(
+                        request.getTenantSubdomain(),
+                        request.getTenantSubdomain() + " Organization"
+                )
+        );
+
+        // 3️⃣ Check if email exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
 
+        // 4️⃣ Build and save user
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -86,7 +86,6 @@ public class UserService {
 
     @Transactional
     public UserDTO createEndUser(CreateUserRequest request) {
-        // CUSTOMER_ADMIN creates END_USER in their tenant
         Tenant tenant = tenantService.getCurrentTenant();
 
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -112,18 +111,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Validate access
         validateUserAccess(user);
 
-        if (request.getFirstName() != null) {
-            user.setFirstName(request.getFirstName());
-        }
-        if (request.getLastName() != null) {
-            user.setLastName(request.getLastName());
-        }
-        if (request.getActive() != null) {
-            user.setActive(request.getActive());
-        }
+        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.setLastName(request.getLastName());
+        if (request.getActive() != null) user.setActive(request.getActive());
 
         user = userRepository.save(user);
         return convertToDTO(user);
@@ -134,21 +126,15 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Validate access
         validateUserAccess(user);
-
         userRepository.delete(user);
     }
 
     private void validateUserAccess(User user) {
         Tenant currentTenant = tenantService.getCurrentTenant();
 
-        // Super admin can access anyone
-        if (tenantService.isSuperAdminTenant()) {
-            return;
-        }
+        if (tenantService.isSuperAdminTenant()) return;
 
-        // Customer admin can only access users in their tenant
         if (!user.getTenant().getId().equals(currentTenant.getId())) {
             throw new UnauthorizedAccessException("Cannot access users from different tenant");
         }

@@ -31,6 +31,7 @@ public class SSOConfig {
     private SSOProvider provider;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean enabled = false;
 
     // Common fields

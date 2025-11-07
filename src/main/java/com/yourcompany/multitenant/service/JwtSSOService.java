@@ -56,7 +56,6 @@
 //            Claims claims = Jwts.parserBuilder()
 //                    .setSigningKey(key)
 //                    .requireIssuer(config.getJwtIssuer())
-//                    .requireAudience(config.getJwtAudience())
 //                    .build()
 //                    .parseClaimsJws(idpToken)
 //                    .getBody();
