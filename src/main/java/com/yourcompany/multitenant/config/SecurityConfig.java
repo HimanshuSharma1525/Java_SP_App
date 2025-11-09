@@ -37,6 +37,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // --- Health Check Endpoints (for Render) ---
+                        .requestMatchers(
+                                new AntPathRequestMatcher("/api/health"),
+                                new AntPathRequestMatcher("/api/ping")
+                        ).permitAll()
+
                         // --- Public resources ---
                         .requestMatchers(
                                 new AntPathRequestMatcher("/"),
@@ -44,6 +50,7 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/login.html"),
                                 new AntPathRequestMatcher("/register.html"),
                                 new AntPathRequestMatcher("/index.html"),
+                                new AntPathRequestMatcher("/debug-domain.html"),
                                 new AntPathRequestMatcher("/static/**"),
                                 new AntPathRequestMatcher("/public/**"),
                                 new AntPathRequestMatcher("/**/*.js"),
@@ -70,7 +77,6 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(new AntPathRequestMatcher("/api/super-admin/**")).hasAuthority("SUPER_ADMIN")
-
 
                         // --- Dashboards ---
                         .requestMatchers(new AntPathRequestMatcher("/super-admin-dashboard.html"))

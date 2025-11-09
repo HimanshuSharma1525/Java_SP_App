@@ -11,10 +11,10 @@ SELECT id, 'OAUTH', false FROM tenants WHERE subdomain = '1';
 
 -- Insert sample SSO configurations for superadmin tenant
 INSERT INTO sso_config (tenant_id, provider, enabled)
-SELECT id, 'JWT', false FROM tenants WHERE subdomain = 'superadmin';
+SELECT id, 'JWT', false FROM tenants WHERE subdomain = '';
 
 INSERT INTO sso_config (tenant_id, provider, enabled)
-SELECT id, 'SAML', false FROM tenants WHERE subdomain = 'superadmin';
+SELECT id, 'SAML', false FROM tenants WHERE subdomain = '';
 
 INSERT INTO sso_config (tenant_id, provider, enabled)
-SELECT id, 'OAUTH', false FROM tenants WHERE subdomain = 'superadmin';
+SELECT id, 'OAUTH', false FROM tenants WHERE subdomain = '';
