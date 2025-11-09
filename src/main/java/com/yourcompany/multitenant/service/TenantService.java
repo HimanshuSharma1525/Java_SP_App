@@ -4,11 +4,14 @@ import com.yourcompany.multitenant.config.TenantContext;
 import com.yourcompany.multitenant.exception.TenantNotFoundException;
 import com.yourcompany.multitenant.model.Tenant;
 import com.yourcompany.multitenant.repository.TenantRepository;
+import com.yourcompany.multitenant.config.TenantFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -19,13 +22,25 @@ public class TenantService {
 
     @Transactional(readOnly = true)
     public Tenant getCurrentTenant() {
-        String subdomain = TenantContext.getTenantId();
-        if (subdomain == null) {
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null) {
             throw new TenantNotFoundException("No tenant context found");
         }
 
-        return tenantRepository.findBySubdomain(subdomain)
-                .orElseThrow(() -> new TenantNotFoundException("Tenant not found: " + subdomain));
+        // 🎯 1. Handle Super Admin Login (base domain: localhost or yourdomain.com)
+        // If the context ID is the special identifier from TenantFilter,
+        // we must look up the tenant by its actual database subdomain, which is the empty string ('').
+        if (TenantFilter.SUPER_ADMIN_ID.equals(tenantId)) {
+            log.debug("Current context is Super Admin. Fetching tenant by empty subdomain ('').");
+
+            return tenantRepository.findBySubdomain("")
+                    .orElseThrow(() -> new TenantNotFoundException("Super Admin tenant not found (no subdomain match)."));
+        }
+
+        // 2. Handle Regular Tenant Login (subdomain: tenant1.localhost or tenant1.yourdomain.com)
+        log.debug("Current context is regular tenant: {}. Fetching tenant by subdomain.", tenantId);
+        return tenantRepository.findBySubdomain(tenantId)
+                .orElseThrow(() -> new TenantNotFoundException("Tenant not found: " + tenantId));
     }
 
     @Transactional(readOnly = true)
@@ -35,7 +50,7 @@ public class TenantService {
     }
 
     @Transactional(readOnly = true)
-    public java.util.Optional<Tenant> getTenantBySubdomainOptional(String subdomain) {
+    public Optional<Tenant> getTenantBySubdomainOptional(String subdomain) {
         return tenantRepository.findBySubdomain(subdomain);
     }
 
@@ -79,7 +94,8 @@ public class TenantService {
     }
 
     public boolean isSuperAdminTenant() {
-        String subdomain = TenantContext.getTenantId();
-        return "superadmin".equals(subdomain);
+        String tenantId = TenantContext.getTenantId();
+        // Check if the context ID is the special Super Admin identifier
+        return TenantFilter.SUPER_ADMIN_ID.equals(tenantId);
     }
 }

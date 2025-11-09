@@ -27,6 +27,13 @@ public class CustomerAdminController {
         return ResponseEntity.ok(endUsers);
     }
 
+    // 🌟 NEW: Fetch single END_USER detail by ID (Fixes Edit Modal Pre-filling)
+    @GetMapping("/end-users/{userId}")
+    public ResponseEntity<UserDTO> getEndUserById(@PathVariable Long userId) {
+        UserDTO user = userService.getUserById(userId); // Assuming UserService has a method for this
+        return ResponseEntity.ok(user);
+    }
+
     // ✅ Create END_USER under current tenant
     @PostMapping("/end-users")
     public ResponseEntity<UserDTO> createEndUser(@Valid @RequestBody CreateUserRequest request) {

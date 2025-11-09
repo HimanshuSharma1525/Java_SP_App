@@ -1,4 +1,3 @@
-// src/main/java/com/yourcompany/multitenant/repository/UserRepository.java
 package com.yourcompany.multitenant.repository;
 
 import com.yourcompany.multitenant.model.Role;
@@ -17,6 +16,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByTenant(Tenant tenant);
 
     boolean existsByEmail(@NotBlank(message = "Email is required") @Email(message = "Invalid email address") String email);
+
+    /**
+     * Checks if a user with the given email exists within the specified tenant.
+     * This is crucial for enforcing tenant-scoped uniqueness for END_USERS.
+     */
+    boolean existsByEmailAndTenant(String email, Tenant tenant);
 
     List<User> findByTenantAndRole(Tenant tenant, Role role);
 }

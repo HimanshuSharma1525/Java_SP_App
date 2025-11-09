@@ -3,10 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Multi-Tenant Application</title>
+    <title id="pageTitle">Register - Multi-Tenant Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
+        :root {
+            --primary-color: #5d5dff;
+            --primary-light: #f0f0ff;
+            --bg-page: #f4f7f9;
+            --bg-container: white;
+            --text-dark: #2c3e50;
+            --text-medium: #7f8c8d;
+            --border-color: #e0e0e0;
+            --shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --super-admin-color: #9b59b6;
+            --super-admin-light: #f3e5f5;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +29,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0c0122 0%, #6b16c3 100%);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-page);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,24 +39,23 @@
         }
 
         .register-container {
-            background: #063f55;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: var(--bg-container);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
             padding: 40px;
-            animation: slideIn 0.5s ease-out;
+            animation: fadeIn 0.7s ease-out;
+            border-top: 5px solid var(--primary-color);
         }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .register-container.super-admin {
+            border-top-color: var(--super-admin-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .logo {
@@ -50,19 +64,43 @@
         }
 
         .logo h1 {
-            color: #667eea;
-            font-size: 32px;
-            font-weight: bold;
+            color: var(--text-dark);
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo h1 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .logo h1.super-admin-title i {
+            color: var(--super-admin-color);
         }
 
         .subdomain-info {
-            background: #f0f4ff;
+            background: var(--primary-light);
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             text-align: center;
-            color: #667eea;
-            font-weight: 500;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid rgba(93, 93, 255, 0.2);
+        }
+
+        .subdomain-info.super-admin {
+            background: var(--super-admin-light);
+            color: var(--super-admin-color);
+            border-color: rgba(155, 89, 182, 0.2);
+        }
+
+        .subdomain-info i {
+            margin-right: 8px;
         }
 
         .form-group {
@@ -72,55 +110,72 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #000000;
-            font-weight: 500;
+            color: var(--text-dark);
+            font-weight: 600;
             font-size: 14px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             font-size: 16px;
+            background: var(--bg-page);
+            color: var(--text-dark);
             transition: all 0.3s;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(93, 93, 255, 0.15);
+            background: white;
         }
 
         .btn {
             width: 100%;
             padding: 14px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--primary-color);
             color: white;
+            box-shadow: 0 4px 10px rgba(93, 93, 255, 0.3);
         }
 
         .btn-primary:hover {
+            background-color: #4b4bdf;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 15px rgba(93, 93, 255, 0.4);
+        }
+
+        .btn-primary.super-admin {
+            background-color: var(--super-admin-color);
+            box-shadow: 0 4px 10px rgba(155, 89, 182, 0.3);
+        }
+
+        .btn-primary.super-admin:hover {
+            background-color: #8e44ad;
+            box-shadow: 0 8px 15px rgba(155, 89, 182, 0.4);
         }
 
         .login-link {
             text-align: center;
-            margin-top: 20px;
-            color: #666;
+            margin-top: 25px;
+            color: var(--text-medium);
+            font-size: 15px;
         }
 
         .login-link a {
-            color: #667eea;
+            color: var(--primary-color);
             text-decoration: none;
             font-weight: 600;
         }
@@ -130,62 +185,71 @@
         }
 
         .error-message {
-            background: #ffebee;
-            color: #c62828;
+            background: #fdf2f2;
+            color: #e74c3c;
+            border: 1px solid #f9dcdc;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
+            font-weight: 500;
         }
 
         .success-message {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: #e9f7ef;
+            color: #27ae60;
+            border: 1px solid #c8e6c9;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
+            font-weight: 500;
         }
 
         .password-requirements {
             font-size: 12px;
-            color: #666;
+            color: var(--text-medium);
             margin-top: 5px;
             padding-left: 5px;
+            line-height: 1.5;
         }
 
         .password-requirements ul {
             margin-top: 5px;
             padding-left: 20px;
+            list-style-type: '• ';
         }
 
-        .password-requirements li {
-            margin: 3px 0;
-        }
-
-        .warning-box {
-            background: #fff3e0;
-            border-left: 4px solid #ff9800;
-            padding: 12px;
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #b3d9f2;
             border-radius: 8px;
+            padding: 12px;
             margin-bottom: 20px;
-            color: #e65100;
-            font-size: 14px;
+            font-size: 13px;
+            color: #2c5282;
+            line-height: 1.6;
+        }
+
+        .info-box i {
+            margin-right: 8px;
+            color: #3182ce;
         }
     </style>
 </head>
 <body>
-<div class="register-container">
+<div class="register-container" id="registerContainer">
     <div class="logo">
-        <h1>📝 Register</h1>
+        <h1 id="mainTitle"><i class="fas fa-user-plus"></i> Create Account</h1>
     </div>
 
     <div class="subdomain-info" id="subdomainInfo">
-        Loading subdomain...
+        Loading context...
     </div>
 
-    <div class="warning-box" id="warningBox" style="display: none;">
-        ⚠️ Registration is only available for end users. Customer admins must be created by super admin.
+    <div class="info-box" id="infoBox" style="display: none;">
+        <i class="fas fa-info-circle"></i>
+        <span id="infoText"></span>
     </div>
 
     <div class="error-message" id="errorMessage"></div>
@@ -194,23 +258,29 @@
     <form id="registerForm">
         <div class="form-group">
             <label for="firstName">First Name</label>
-            <input type="text" id="firstName" name="firstName" required placeholder="Enter your first name">
+            <input type="text" id="firstName" name="firstName" required placeholder="Your first name">
         </div>
 
         <div class="form-group">
             <label for="lastName">Last Name</label>
-            <input type="text" id="lastName" name="lastName" required placeholder="Enter your last name">
+            <input type="text" id="lastName" name="lastName" required placeholder="Your last name">
         </div>
 
         <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" required placeholder="Enter your email">
+            <input type="email" id="email" name="email" required placeholder="name@company.com">
+        </div>
+
+        <div class="form-group" id="tenantSubdomainGroup" style="display: none;">
+            <label for="tenantSubdomain">Organization Subdomain (e.g., 'acme')</label>
+            <input type="text" id="tenantSubdomain" name="tenantSubdomain" placeholder="Enter your unique organization name">
         </div>
 
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" required placeholder="Create a password">
+            <input type="password" id="password" name="password" required placeholder="Create a strong password">
             <div class="password-requirements">
+                **Password Requirements:**
                 <ul>
                     <li>At least 8 characters long</li>
                     <li>Include uppercase and lowercase letters</li>
@@ -222,57 +292,101 @@
 
         <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm your password">
+            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Re-enter password">
         </div>
 
-        <button type="submit" class="btn btn-primary">Register</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Create Account</button>
     </form>
 
     <div class="login-link">
-        Already have an account? <a href="login.html">Login here</a>
+        Already have an account? <a href="login.html">Sign In</a>
     </div>
 </div>
 
+<script src="config.js"></script>
 <script>
-    // Get current subdomain
-    const hostname = window.location.hostname;
-    const subdomain = hostname.split('.')[0];
-    document.getElementById('subdomainInfo').textContent = `Registering for tenant: ${subdomain}`;
+    // --- Determine Registration Context ---
+    const currentSubdomain = getSubdomain();
+    const isSuperAdmin = isSuperAdminDomain();
 
-    // Show warning if trying to register on superadmin subdomain
-    if (subdomain === 'superadmin') {
-        document.getElementById('warningBox').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'none';
+    // --- DOM Elements ---
+    const subdomainInfo = document.getElementById('subdomainInfo');
+    const infoBox = document.getElementById('infoBox');
+    const infoText = document.getElementById('infoText');
+    const tenantSubdomainGroup = document.getElementById('tenantSubdomainGroup');
+    const tenantSubdomainInput = document.getElementById('tenantSubdomain');
+    const mainTitle = document.getElementById('mainTitle');
+    const registerContainer = document.getElementById('registerContainer');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // --- Setup UI based on Domain ---
+    if (isSuperAdmin) {
+        // Customer Admin Self-Registration Flow (on base domain)
+        subdomainInfo.innerHTML = '<i class="fas fa-crown"></i> Customer Admin Registration (Base Domain)';
+        subdomainInfo.classList.add('super-admin');
+        registerContainer.classList.add('super-admin');
+        mainTitle.innerHTML = '<i class="fas fa-building"></i> Register Organization Admin';
+        mainTitle.classList.add('super-admin-title');
+        submitBtn.classList.add('super-admin');
+
+        tenantSubdomainGroup.style.display = 'block';
+        tenantSubdomainInput.required = true;
+
+        infoBox.style.display = 'block';
+        infoText.textContent = 'You are registering as a Customer Admin on the base domain. This will create a new organization with its own subdomain.';
+    } else if (currentSubdomain) {
+        // End User Registration Flow (on subdomain)
+        subdomainInfo.innerHTML = `<i class="fas fa-user"></i> End User Registration for: ${currentSubdomain.toUpperCase()}`;
+        mainTitle.innerHTML = '<i class="fas fa-user-plus"></i> Register End User';
+        tenantSubdomainInput.required = false;
+        tenantSubdomainGroup.style.display = 'none';
+
+        infoBox.style.display = 'block';
+        infoText.textContent = `You are registering as an End User for the ${currentSubdomain.toUpperCase()} organization.`;
+    } else {
+        // Unknown domain context
+        subdomainInfo.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Unknown Domain Context';
+        subdomainInfo.style.background = '#fdf2f2';
+        subdomainInfo.style.color = '#e74c3c';
+        subdomainInfo.style.borderColor = '#f9dcdc';
+
+        infoBox.style.display = 'block';
+        infoBox.style.background = '#fdf2f2';
+        infoBox.style.borderColor = '#f9dcdc';
+        infoText.style.color = '#e74c3c';
+        infoText.innerHTML = '<strong>Error:</strong> Unable to determine registration context. Please access from a valid domain.';
     }
 
-    // Handle registration
+    // --- Registration Handler ---
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         hideMessages();
 
-        const firstName = document.getElementById('firstName').value;
-        const lastName = document.getElementById('lastName').value;
-        const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
 
-        // Validate passwords match
         if (password !== confirmPassword) {
             showError('Passwords do not match!');
             return;
         }
 
-        // Validate password strength
         if (!validatePassword(password)) {
             showError('Password does not meet requirements!');
             return;
         }
 
-        // Disable submit button
-        const submitBtn = document.querySelector('.btn-primary');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Registering...';
+
+        const requestBody = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            password: password,
+            // Only include tenantSubdomain if it's Customer Admin registration
+            ...(isSuperAdmin && { tenantSubdomain: tenantSubdomainInput.value })
+        };
 
         try {
             const response = await fetch('/api/auth/register', {
@@ -280,74 +394,61 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    firstName,
-                    lastName,
-                    email,
-                    password
-                })
+                body: JSON.stringify(requestBody)
             });
 
             const data = await response.text();
 
             if (response.ok) {
                 showSuccess('Registration successful! Redirecting to login...');
-
-                // Clear form
                 document.getElementById('registerForm').reset();
-
-                // Redirect to login page
                 setTimeout(() => {
                     window.location.href = 'login.html';
                 }, 2000);
             } else {
-                const errorData = JSON.parse(data);
-                showError(errorData.error || 'Registration failed. Please try again.');
+                let errorMsg = 'Registration failed. Please try again.';
+                try {
+                    const errorData = JSON.parse(data);
+                    errorMsg = errorData.error || errorData.message || errorMsg;
+                } catch (e) {
+                    // Fallback for non-JSON error
+                }
+                showError(errorMsg);
             }
         } catch (error) {
             showError('Network error. Please try again.');
             console.error('Registration error:', error);
         } finally {
-            // Re-enable submit button
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Register';
+            submitBtn.textContent = 'Create Account';
         }
     });
 
+    // --- Utility Functions ---
     function validatePassword(password) {
-        // At least 8 characters
         if (password.length < 8) return false;
-
-        // Has uppercase
         if (!/[A-Z]/.test(password)) return false;
-
-        // Has lowercase
         if (!/[a-z]/.test(password)) return false;
-
-        // Has number
         if (!/[0-9]/.test(password)) return false;
-
-        // Has special character
         if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return false;
-
         return true;
     }
 
     function showError(message) {
         const errorDiv = document.getElementById('errorMessage');
+        const successDiv = document.getElementById('successMessage');
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
-
-        // Scroll to top
+        successDiv.style.display = 'none';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function showSuccess(message) {
+        const errorDiv = document.getElementById('errorMessage');
         const successDiv = document.getElementById('successMessage');
         successDiv.textContent = message;
         successDiv.style.display = 'block';
-
-        // Scroll to top
+        errorDiv.style.display = 'none';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 

@@ -6,7 +6,21 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
+        :root {
+            --primary-color: #667eea; /* Primary Gradient Start */
+            --secondary-color: #764ba2; /* Primary Gradient End */
+            --text-dark: #2c3e50;
+            --text-medium: #7f8c8d;
+            --bg-page: #f4f7f9;
+            --bg-card: white;
+            --border-color: #e0e0e0;
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,14 +28,15 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-page);
         }
 
+        /* --- Navbar --- */
         .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
-            padding: 20px 40px;
+            padding: 15px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -29,8 +44,8 @@
         }
 
         .navbar-brand {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 20px;
+            font-weight: 700;
         }
 
         .navbar-user {
@@ -49,19 +64,20 @@
         }
 
         .user-role {
-            font-size: 12px;
+            font-size: 11px;
             background: rgba(255, 255, 255, 0.2);
             padding: 4px 12px;
             border-radius: 12px;
             margin-top: 4px;
             display: inline-block;
+            font-weight: 600;
         }
 
         .btn-logout {
             background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
+            border: 1px solid white;
             color: white;
-            padding: 8px 20px;
+            padding: 8px 15px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
@@ -70,9 +86,10 @@
 
         .btn-logout:hover {
             background: white;
-            color: #667eea;
+            color: var(--secondary-color);
         }
 
+        /* --- Main Content --- */
         .container {
             max-width: 1400px;
             margin: 40px auto;
@@ -84,28 +101,30 @@
         }
 
         .page-header h1 {
-            font-size: 32px;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 28px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-weight: 700;
         }
 
         .page-header p {
-            color: #666;
-            font-size: 16px;
+            color: var(--text-medium);
+            font-size: 15px;
         }
 
+        /* --- Tabs --- */
         .tabs {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid var(--border-color);
         }
 
         .tab {
-            padding: 12px 24px;
+            padding: 12px 0;
             background: none;
             border: none;
-            color: #666;
+            color: var(--text-medium);
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
@@ -114,12 +133,12 @@
         }
 
         .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
         }
 
         .tab:hover {
-            color: #667eea;
+            color: var(--primary-color);
         }
 
         .tab-content {
@@ -130,11 +149,13 @@
             display: block;
         }
 
+        /* --- Cards and Grid --- */
         .card {
-            background: white;
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
         }
 
         .card-header {
@@ -142,41 +163,48 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .card-title {
             font-size: 20px;
             font-weight: 600;
-            color: #333;
+            color: var(--text-dark);
         }
 
+        /* --- Buttons --- */
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-1px);
+            opacity: 0.9;
+            box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
         }
 
         .btn-success {
-            background: #4CAF50;
+            background: #28a745;
             color: white;
         }
 
         .btn-danger {
-            background: #f44336;
+            background: #dc3545;
             color: white;
         }
 
@@ -185,23 +213,25 @@
             font-size: 12px;
         }
 
+        /* --- Table --- */
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
         th {
-            background: #f8f9fa;
+            background: var(--bg-page);
             padding: 12px;
             text-align: left;
             font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e0e0e0;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border-color);
         }
 
         td {
             padding: 12px;
             border-bottom: 1px solid #f0f0f0;
+            color: var(--text-dark);
         }
 
         tr:hover {
@@ -209,22 +239,29 @@
         }
 
         .badge {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .badge-success {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: #d4edda;
+            color: #155724;
         }
 
         .badge-danger {
-            background: #ffebee;
-            color: #c62828;
+            background: #f8d7da;
+            color: #721c24;
         }
 
+        .badge-info {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* --- Modal --- */
         .modal {
             display: none;
             position: fixed;
@@ -232,7 +269,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -243,46 +280,54 @@
         }
 
         .modal-content {
-            background: white;
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: 10px;
             padding: 30px;
             width: 90%;
             max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .modal-header {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;
             margin-bottom: 20px;
-            color: #333;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+            font-weight: 600;
             font-size: 14px;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--bg-page);
+        }
+
+        .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            background: white;
+        }
+
+        .form-group input[readonly] {
+            background: #e9ecef;
+            cursor: not-allowed;
         }
 
         .modal-actions {
@@ -294,15 +339,15 @@
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #999;
+            padding: 50px 20px;
+            color: var(--text-medium);
+            font-size: 16px;
         }
 
-        .empty-state svg {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            opacity: 0.5;
+        .empty-state i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: var(--border-color);
         }
 
         .action-buttons {
@@ -310,49 +355,63 @@
             gap: 8px;
         }
 
+        /* --- Alerts --- */
         .alert {
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .alert-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-left: 4px solid #4CAF50;
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
         }
 
         .alert-error {
-            background: #ffebee;
-            color: #c62828;
-            border-left: 4px solid #f44336;
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert i {
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <div class="navbar-brand">🎯 Super Admin Dashboard</div>
+    <div class="navbar-brand"><i class="fas fa-rocket"></i> Super Admin Dashboard</div>
     <div class="navbar-user">
         <div class="user-info">
             <div class="user-email" id="userEmail">Loading...</div>
-            <div class="user-role">SUPER ADMIN</div>
+            <div class="user-role"><i class="fas fa-crown"></i> SUPER ADMIN</div>
         </div>
-        <button class="btn-logout" onclick="logout()">Logout</button>
+        <button class="btn-logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
     </div>
 </nav>
 
 <div class="container">
     <div class="page-header">
         <h1>Welcome, Super Admin</h1>
-        <p>Manage customer admins, tenants, and SSO configurations</p>
+        <p>Manage customer admins, tenants, and SSO configurations across all platform tenants.</p>
     </div>
 
     <div class="tabs">
-        <button class="tab active" onclick="switchTab('customerAdmins')">Customer Admins</button>
-        <button class="tab" onclick="switchTab('ssoConfig')">SSO Configuration</button>
+        <button class="tab active" onclick="switchTab(event, 'customerAdmins')">
+            <i class="fas fa-users-cog"></i> Customer Admins
+        </button>
+        <button class="tab" onclick="switchTab(event, 'ssoConfig')">
+            <i class="fas fa-lock"></i> SSO Configuration
+        </button>
     </div>
 
-    <!-- Customer Admins Tab -->
     <div id="customerAdmins" class="tab-content active">
         <div id="alertContainer"></div>
 
@@ -360,7 +419,7 @@
             <div class="card-header">
                 <h2 class="card-title">Customer Admins</h2>
                 <button class="btn btn-primary" onclick="openCreateModal()">
-                    + Add Customer Admin
+                    <i class="fas fa-user-plus"></i> Add Customer Admin
                 </button>
             </div>
 
@@ -378,7 +437,8 @@
                 <tbody id="customerAdminsBody">
                 <tr>
                     <td colspan="6" class="empty-state">
-                        Loading customer admins...
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading customer admins...</p>
                     </td>
                 </tr>
                 </tbody>
@@ -386,24 +446,24 @@
         </div>
     </div>
 
-    <!-- SSO Configuration Tab -->
     <div id="ssoConfig" class="tab-content">
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">SSO Configuration</h2>
-                <p style="color: #666; font-size: 14px;">Configure SSO providers for the platform</p>
+                <p style="color: var(--text-medium); font-size: 14px;">Platform-wide SSO settings.</p>
             </div>
 
             <div id="ssoConfigContent">
-                <p style="text-align: center; color: #999; padding: 40px;">
-                    SSO Configuration coming soon...
+                <p class="empty-state">
+                    <i class="fas fa-wrench"></i>
+                    <br>
+                    SSO Configuration management interface coming soon...
                 </p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Create/Edit Customer Admin Modal -->
 <div id="customerAdminModal" class="modal">
     <div class="modal-content">
         <h3 class="modal-header" id="modalTitle">Add Customer Admin</h3>
@@ -412,33 +472,33 @@
 
             <div class="form-group">
                 <label for="firstName">First Name *</label>
-                <input type="text" id="firstName" required>
+                <input type="text" id="firstName" required placeholder="Alice">
             </div>
 
             <div class="form-group">
                 <label for="lastName">Last Name *</label>
-                <input type="text" id="lastName" required>
+                <input type="text" id="lastName" required placeholder="Smith">
             </div>
 
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" required>
+                <input type="email" id="email" required placeholder="admin@example.com">
             </div>
 
             <div class="form-group">
                 <label for="tenantSubdomain">Tenant Subdomain *</label>
-                <input type="text" id="tenantSubdomain" placeholder="e.g., company1" required>
-                <small style="color: #666;">This will be the subdomain for this customer admin</small>
+                <input type="text" id="tenantSubdomain" placeholder="e.g., awesomecorp" required>
+                <small style="color: #666;">This is the unique subdomain for the customer's portal.</small>
             </div>
 
             <div class="form-group" id="passwordGroup">
                 <label for="password">Password *</label>
-                <input type="password" id="password">
+                <input type="password" id="password" placeholder="Set initial password">
             </div>
 
             <div class="modal-actions">
                 <button type="button" class="btn" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
             </div>
         </form>
     </div>
@@ -460,8 +520,7 @@
     loadCustomerAdmins();
 
     // Tab switching
-    function switchTab(tabName) {
-        // Hide all tabs
+    function switchTab(event, tabName) {
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
@@ -469,13 +528,15 @@
             tab.classList.remove('active');
         });
 
-        // Show selected tab
         document.getElementById(tabName).classList.add('active');
-        event.target.classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
     // Load customer admins
     async function loadCustomerAdmins() {
+        const tbody = document.getElementById('customerAdminsBody');
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading customer admins...</p></td></tr>`;
+
         try {
             const response = await fetch('/api/super-admin/customer-admins', {
                 headers: {
@@ -490,10 +551,12 @@
                 logout();
             } else {
                 showAlert('Failed to load customer admins', 'error');
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading data.</p></td></tr>`;
             }
         } catch (error) {
             console.error('Error loading customer admins:', error);
             showAlert('Network error while loading data', 'error');
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-network-wired"></i><p>Network connection failed.</p></td></tr>`;
         }
     }
 
@@ -504,8 +567,8 @@
             tbody.innerHTML = `
                     <tr>
                         <td colspan="6" class="empty-state">
-                            <div>📋</div>
-                            <p>No customer admins yet. Click "Add Customer Admin" to create one.</p>
+                            <i class="fas fa-user-slash"></i>
+                            <p>No customer admins have been created yet.</p>
                         </td>
                     </tr>
                 `;
@@ -518,7 +581,7 @@
                     <td>${admin.email}</td>
                     <td>${admin.firstName} ${admin.lastName}</td>
                     <td>
-                        <span class="badge badge-success">${admin.tenantSubdomain}</span>
+                        <span class="badge badge-info">${admin.tenantSubdomain}</span>
                     </td>
                     <td>
                         <span class="badge ${admin.active ? 'badge-success' : 'badge-danger'}">
@@ -527,11 +590,11 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-small btn-success" onclick="editCustomerAdmin(${admin.id})">
-                                Edit
+                            <button class="btn btn-small btn-success" onclick="editCustomerAdmin(${admin.id})" title="Edit User">
+                                <i class="fas fa-pen"></i> Edit
                             </button>
-                            <button class="btn btn-small btn-danger" onclick="deleteCustomerAdmin(${admin.id})">
-                                Delete
+                            <button class="btn btn-small btn-danger" onclick="deleteCustomerAdmin(${admin.id})" title="Delete User">
+                                <i class="fas fa-trash-alt"></i> Delete
                             </button>
                         </div>
                     </td>
@@ -557,6 +620,11 @@
     // Handle form submission
     document.getElementById('customerAdminForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        const submitBtn = document.querySelector('#customerAdminModal .btn-primary');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
 
         const userId = document.getElementById('userId').value;
         const isEdit = userId !== '';
@@ -600,23 +668,58 @@
         } catch (error) {
             console.error('Error:', error);
             showAlert('Network error', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save';
         }
     });
 
+    /**
+     * UPDATED: Fetches the specific Customer Admin's details from the backend
+     * and pre-fills the edit modal.
+     */
     async function editCustomerAdmin(userId) {
-        // For simplicity, we'll just allow editing name
-        // In a real app, you'd fetch the user details first
         document.getElementById('modalTitle').textContent = 'Edit Customer Admin';
         document.getElementById('userId').value = userId;
+
+        // Hide password group for edit and reset fields
         document.getElementById('passwordGroup').style.display = 'none';
         document.getElementById('password').required = false;
+        document.getElementById('customerAdminForm').reset();
+
         document.getElementById('email').readOnly = true;
         document.getElementById('tenantSubdomain').readOnly = true;
-        document.getElementById('customerAdminModal').classList.add('show');
+
+        try {
+            // Fetch user data using the Super Admin API endpoint
+            const response = await fetch(`/api/super-admin/users/${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const admin = await response.json();
+
+                // Populate the modal fields with fetched data
+                document.getElementById('firstName').value = admin.firstName;
+                document.getElementById('lastName').value = admin.lastName;
+                document.getElementById('email').value = admin.email;
+                document.getElementById('tenantSubdomain').value = admin.tenantSubdomain;
+
+                // Show the modal
+                document.getElementById('customerAdminModal').classList.add('show');
+            } else {
+                showAlert('Failed to fetch user data for edit.', 'error');
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            showAlert('Network error while loading user data.', 'error');
+        }
     }
 
     async function deleteCustomerAdmin(userId) {
-        if (!confirm('Are you sure you want to delete this customer admin?')) {
+        if (!confirm('Are you sure you want to delete this customer admin? This action cannot be undone.')) {
             return;
         }
 
@@ -632,7 +735,8 @@
                 showAlert('Customer admin deleted successfully!', 'success');
                 loadCustomerAdmins();
             } else {
-                showAlert('Failed to delete customer admin', 'error');
+                const error = await response.json();
+                showAlert(error.error || 'Failed to delete customer admin', 'error');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -643,9 +747,11 @@
     function showAlert(message, type) {
         const alertContainer = document.getElementById('alertContainer');
         const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+        const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
 
         alertContainer.innerHTML = `
                 <div class="alert ${alertClass}">
+                    <i class="fas ${iconClass}"></i>
                     ${message}
                 </div>
             `;

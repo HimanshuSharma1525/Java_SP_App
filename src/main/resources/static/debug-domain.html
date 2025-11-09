@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Detection Debug</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 {
+            color: #4ec9b0;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+        }
+        .info-box {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-box h2 {
+            color: #569cd6;
+            margin-top: 0;
+        }
+        .result {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #4ec9b0;
+        }
+        .result.error {
+            border-left-color: #f48771;
+        }
+        .result.success {
+            border-left-color: #89d185;
+        }
+        .label {
+            color: #9cdcfe;
+            font-weight: bold;
+        }
+        .value {
+            color: #ce9178;
+        }
+        .boolean-true {
+            color: #89d185;
+            font-weight: bold;
+        }
+        .boolean-false {
+            color: #f48771;
+            font-weight: bold;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+    </style>
+</head>
+<body>
+<h1>🔍 Multi-Tenant Domain Detection Debug</h1>
+
+<div class="info-box">
+    <h2>Current Environment</h2>
+    <div class="result">
+        <span class="label">window.location.hostname:</span>
+        <span class="value" id="hostname"></span>
+    </div>
+    <div class="result">
+        <span class="label">window.location.host:</span>
+        <span class="value" id="host"></span>
+    </div>
+    <div class="result">
+        <span class="label">window.location.href:</span>
+        <span class="value" id="href"></span>
+    </div>
+</div>
+
+<div class="info-box">
+    <h2>Configuration Detection</h2>
+    <div class="result">
+        <span class="label">Environment:</span>
+        <span class="value" id="env"></span>
+    </div>
+    <div class="result">
+        <span class="label">Base Domain:</span>
+        <span class="value" id="baseDomain"></span>
+    </div>
+</div>
+
+<div class="info-box">
+    <h2>Tenant Context Analysis</h2>
+    <div class="result" id="isSuperAdminResult">
+        <span class="label">Is Super Admin Domain:</span>
+        <span id="isSuperAdmin"></span>
+    </div>
+    <div class="result">
+        <span class="label">Extracted Subdomain:</span>
+        <span class="value" id="subdomain"></span>
+    </div>
+    <div class="result">
+        <span class="label">Display Text:</span>
+        <span class="value" id="displayText"></span>
+    </div>
+</div>
+
+<div class="info-box">
+    <h2>Domain Parts Breakdown</h2>
+    <div class="result">
+        <span class="label">Parts Array:</span>
+        <span class="value" id="parts"></span>
+    </div>
+    <div class="result">
+        <span class="label">Base Domain Parts:</span>
+        <span class="value" id="baseParts"></span>
+    </div>
+    <div class="result">
+        <span class="label">Number of Parts:</span>
+        <span class="value" id="numParts"></span>
+    </div>
+</div>
+
+<div class="info-box">
+    <h2>Quick Actions</h2>
+    <button onclick="window.location.href='login.html'">Go to Login</button>
+    <button onclick="window.location.href='register.html'">Go to Register</button>
+    <button onclick="location.reload()">Refresh Debug</button>
+</div>
+
+<script src="config.js"></script>
+<script>
+    // Display basic info
+    document.getElementById('hostname').textContent = window.location.hostname;
+    document.getElementById('host').textContent = window.location.host;
+    document.getElementById('href').textContent = window.location.href;
+
+    // Display configuration
+    document.getElementById('env').textContent = ENV;
+    document.getElementById('baseDomain').textContent = BASE_DOMAIN;
+
+    // Display tenant context
+    const isSuperAdmin = isSuperAdminDomain();
+    const subdomain = getSubdomain();
+    const displayText = getTenantDisplay();
+
+    const isSuperAdminEl = document.getElementById('isSuperAdmin');
+    isSuperAdminEl.textContent = isSuperAdmin ? 'TRUE' : 'FALSE';
+    isSuperAdminEl.className = isSuperAdmin ? 'boolean-true' : 'boolean-false';
+
+    const isSuperAdminResult = document.getElementById('isSuperAdminResult');
+    isSuperAdminResult.className = 'result ' + (isSuperAdmin ? 'success' : '');
+
+    document.getElementById('subdomain').textContent = subdomain || '(none)';
+    document.getElementById('displayText').textContent = displayText;
+
+    // Display domain breakdown
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
+    const baseParts = BASE_DOMAIN.split('.');
+
+    document.getElementById('parts').textContent = JSON.stringify(parts);
+    document.getElementById('baseParts').textContent = JSON.stringify(baseParts);
+    document.getElementById('numParts').textContent = `${parts.length} (Base: ${baseParts.length})`;
+
+    // Log to console
+    console.log('=== DOMAIN DEBUG ===');
+    console.log('Hostname:', hostname);
+    console.log('Environment:', ENV);
+    console.log('Base Domain:', BASE_DOMAIN);
+    console.log('Is Super Admin:', isSuperAdmin);
+    console.log('Subdomain:', subdomain);
+    console.log('Parts:', parts);
+    console.log('Base Parts:', baseParts);
+    console.log('===================');
+</script>
+</body>
+</html>

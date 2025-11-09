@@ -3,10 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Multi-Tenant Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
+        :root {
+            --primary-color: #5d5dff;
+            --primary-light: #f0f0ff;
+            --secondary-color: #34495e;
+            --bg-color: #f4f7f9;
+            --border-color: #e0e0e0;
+            --shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --super-admin-color: #9b59b6;
+            --super-admin-light: #f3e5f5;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +27,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -25,16 +38,21 @@
 
         .login-container {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
             width: 100%;
-            max-width: 450px;
+            max-width: 400px;
             padding: 40px;
-            animation: slideIn 0.5s ease-out;
+            animation: fadeIn 0.7s ease-out;
+            border-top: 5px solid var(--primary-color);
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-30px); }
+        .login-container.super-admin {
+            border-top-color: var(--super-admin-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -44,19 +62,43 @@
         }
 
         .logo h1 {
-            color: #667eea;
-            font-size: 32px;
-            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo h1 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .logo h1.super-admin-title i {
+            color: var(--super-admin-color);
         }
 
         .subdomain-info {
-            background: #f0f4ff;
+            background: var(--primary-light);
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             text-align: center;
-            color: #667eea;
-            font-weight: 500;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid rgba(93, 93, 255, 0.2);
+        }
+
+        .subdomain-info.super-admin {
+            background: var(--super-admin-light);
+            color: var(--super-admin-color);
+            border-color: rgba(155, 89, 182, 0.2);
+        }
+
+        .subdomain-info i {
+            margin-right: 8px;
         }
 
         .form-group { margin-bottom: 20px; }
@@ -64,51 +106,66 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
+            color: var(--secondary-color);
+            font-weight: 600;
             font-size: 14px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             font-size: 16px;
             transition: all 0.3s;
+            background: var(--bg-color);
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(93, 93, 255, 0.1);
         }
 
         .btn {
             width: 100%;
             padding: 14px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             margin-bottom: 12px;
+            letter-spacing: 0.5px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--primary-color);
             color: white;
+            box-shadow: 0 4px 10px rgba(93, 93, 255, 0.3);
         }
 
         .btn-primary:hover {
+            background-color: #4b4bdf;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 15px rgba(93, 93, 255, 0.4);
+        }
+
+        .btn-primary.super-admin {
+            background-color: var(--super-admin-color);
+            box-shadow: 0 4px 10px rgba(155, 89, 182, 0.3);
+        }
+
+        .btn-primary.super-admin:hover {
+            background-color: #8e44ad;
+            box-shadow: 0 8px 15px rgba(155, 89, 182, 0.4);
         }
 
         .divider {
             text-align: center;
-            margin: 25px 0;
+            margin: 30px 0;
             position: relative;
         }
 
@@ -119,7 +176,7 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: #e0e0e0;
+            background: var(--border-color);
         }
 
         .divider span {
@@ -127,7 +184,9 @@
             padding: 0 15px;
             position: relative;
             color: #999;
-            font-size: 14px;
+            font-size: 13px;
+            text-transform: uppercase;
+            font-weight: 500;
         }
 
         .sso-buttons {
@@ -139,34 +198,28 @@
 
         .btn-sso {
             background: white;
-            color: #333;
-            border: 2px solid #e0e0e0;
+            color: var(--secondary-color);
+            border: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             padding: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .btn-sso:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-            transform: translateY(-2px);
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+            transform: none;
         }
 
-        .btn-jwt { border-color: #4CAF50; }
-        .btn-jwt:hover { border-color: #4CAF50; background: #e8f5e9; }
+        .btn-jwt .sso-icon { color: #f39c12; }
+        .btn-saml .sso-icon { color: #3498db; }
+        .btn-oauth .sso-icon { color: #e74c3c; }
 
-        .btn-saml { border-color: #2196F3; }
-        .btn-saml:hover { border-color: #2196F3; background: #e3f2fd; }
-
-        .btn-oauth { border-color: #FF9800; }
-        .btn-oauth:hover { border-color: #FF9800; background: #fff3e0; }
-
-        .sso-icon { width: 24px; height: 24px; font-weight: bold; }
-
-        .register-link { text-align: center; margin-top: 20px; color: #666; }
-        .register-link a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .register-link { text-align: center; margin-top: 25px; color: #666; font-size: 15px; }
+        .register-link a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
         .register-link a:hover { text-decoration: underline; }
 
         .error-message, .success-message {
@@ -174,18 +227,27 @@
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
+            font-weight: 500;
         }
 
-        .error-message { background: #ffebee; color: #c62828; }
-        .success-message { background: #e8f5e9; color: #2e7d32; }
+        .error-message {
+            background: #fdf2f2;
+            color: #e74c3c;
+            border: 1px solid #f9dcdc;
+        }
+        .success-message {
+            background: #e9f7ef;
+            color: #27ae60;
+            border: 1px solid #c8e6c9;
+        }
 
         .loading { display: none; text-align: center; padding: 20px; }
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
@@ -193,43 +255,86 @@
     </style>
 </head>
 <body>
-<div class="login-container">
-    <div class="logo"><h1>🔐 Login</h1></div>
-    <div class="subdomain-info" id="subdomainInfo">Loading subdomain...</div>
+<div class="login-container" id="loginContainer">
+    <div class="logo">
+        <h1 id="pageTitle"><i class="fas fa-lock"></i> MyApp Login</h1>
+    </div>
+    <div class="subdomain-info" id="subdomainInfo">Loading tenant...</div>
+
     <div class="error-message" id="errorMessage"></div>
     <div class="success-message" id="successMessage"></div>
 
     <form id="loginForm">
         <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" required placeholder="Enter your email">
+            <input type="email" id="email" name="email" required placeholder="name@company.com">
         </div>
         <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" required placeholder="Enter your password">
+            <input type="password" id="password" name="password" required placeholder="••••••••">
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" class="btn btn-primary" id="loginBtn">Sign In</button>
     </form>
 
-    <div class="divider"><span>OR CONTINUE WITH</span></div>
-    <div class="sso-buttons" id="ssoButtons">
-        <!-- SSO buttons will be dynamically added here -->
-    </div>
+    <div class="divider"><span>single sign-on</span></div>
+    <div class="sso-buttons" id="ssoButtons"></div>
 
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        <p style="margin-top: 10px; color: #666;">Processing...</p>
+        <p style="margin-top: 10px; color: #666; font-size: 14px;">Authenticating...</p>
     </div>
 
     <div class="register-link">
-        Don't have an account? <a href="register.html">Register here</a>
+        Don't have an account? <a href="register.html">Create an account</a>
     </div>
 </div>
 
+<script src="config.js"></script>
 <script>
-    const hostname = window.location.hostname;
-    const subdomain = hostname.split('.')[0];
-    document.getElementById('subdomainInfo').textContent = `Tenant: ${subdomain}`;
+    // Update the UI based on tenant context
+    const isSuperAdmin = isSuperAdminDomain();
+    const subdomain = getSubdomain();
+
+    // Update UI elements
+    const subdomainInfo = document.getElementById('subdomainInfo');
+    const loginContainer = document.getElementById('loginContainer');
+    const pageTitle = document.getElementById('pageTitle');
+    const loginBtn = document.getElementById('loginBtn');
+
+    if (isSuperAdmin) {
+        // Super Admin UI styling
+        subdomainInfo.innerHTML = '<i class="fas fa-crown"></i> Super Admin Portal';
+        subdomainInfo.classList.add('super-admin');
+        loginContainer.classList.add('super-admin');
+        pageTitle.classList.add('super-admin-title');
+        pageTitle.innerHTML = '<i class="fas fa-shield-alt"></i> Super Admin Login';
+        loginBtn.classList.add('super-admin');
+    } else if (subdomain) {
+        // Tenant-specific UI
+        subdomainInfo.innerHTML = `<i class="fas fa-building"></i> Tenant: ${subdomain.toUpperCase()}`;
+    } else {
+        // Unknown domain
+        subdomainInfo.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Unknown Domain Context';
+        subdomainInfo.style.background = '#fdf2f2';
+        subdomainInfo.style.color = '#e74c3c';
+        subdomainInfo.style.borderColor = '#f9dcdc';
+    }
+
+    function getSSOIcon(provider) {
+        if (provider === 'JWT') return '<i class="fas fa-key sso-icon"></i>';
+        if (provider === 'SAML') return '<i class="fas fa-lock sso-icon"></i>';
+        if (provider === 'OAUTH') return '<i class="fas fa-globe sso-icon"></i>';
+        return '<i class="fas fa-sign-in-alt sso-icon"></i>';
+    }
+
+    function createSSOButton(provider, enabled, loginUrl) {
+        const button = document.createElement('button');
+        button.className = `btn btn-sso btn-${provider.toLowerCase()}`;
+        button.innerHTML = `${getSSOIcon(provider)}
+                            <span>Login with ${provider}</span>`;
+        button.onclick = () => window.location.href = loginUrl;
+        return button;
+    }
 
     async function loadSSOProviders() {
         try {
@@ -238,7 +343,7 @@
             const ssoButtons = document.getElementById('ssoButtons');
             ssoButtons.innerHTML = '';
 
-            const enabledProviders = data.filter(p => p.enabled); // 👈 only show enabled ones
+            const enabledProviders = data.filter(p => p.enabled);
 
             if (enabledProviders.length > 0) {
                 enabledProviders.forEach(p => {
@@ -247,24 +352,14 @@
                 });
             } else {
                 ssoButtons.innerHTML =
-                    '<p style="text-align: center; color: #999;">No SSO providers enabled for this tenant</p>';
+                    '<p style="text-align: center; color: #999; font-size: 14px;">No SSO providers enabled for this tenant</p>';
             }
         } catch (error) {
             console.error('Error loading SSO providers:', error);
             document.getElementById('ssoButtons').innerHTML =
-                '<p style="text-align: center; color: #c62828;">Failed to load SSO providers</p>';
+                '<p style="text-align: center; color: #e74c3c; font-size: 14px;">Failed to load SSO providers</p>';
         }
     }
-
-    function createSSOButton(provider, enabled, loginUrl) {
-        const button = document.createElement('button');
-        button.className = `btn btn-sso btn-${provider.toLowerCase()}`;
-        button.innerHTML = `<span class="sso-icon">${provider === 'JWT' ? '🔑' : provider === 'SAML' ? '🔐' : '🌐'}</span>
-                        <span>Login with ${provider}</span>`;
-        button.onclick = () => window.location.href = loginUrl;
-        return button;
-    }
-
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -305,13 +400,7 @@
         }
     });
 
-    async function handleSSOLogin(provider) {
-        showLoading(); hideMessages();
-        if (provider === 'JWT') window.location.href = '/sso/jwt/login';
-        else if (provider === 'SAML') window.location.href = '/sso/saml/login';
-        else if (provider === 'OAUTH') window.location.href = '/sso/oauth/login';
-    }
-
+    // Handle token/error from SSO redirect
     window.addEventListener('load', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
@@ -325,11 +414,17 @@
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userRole', data.role || 'END_USER');
                     const role = data.role || 'END_USER';
-                    if (role === 'SUPER_ADMIN') window.location.href = '/super-admin-dashboard.html';
-                    else if (role === 'CUSTOMER_ADMIN') window.location.href = '/customer-admin-dashboard.html';
-                    else window.location.href = '/end-user-dashboard.html';
+
+                    let redirectUrl = '/end-user-dashboard.html';
+                    if (role === 'SUPER_ADMIN') redirectUrl = '/super-admin-dashboard.html';
+                    else if (role === 'CUSTOMER_ADMIN') redirectUrl = '/customer-admin-dashboard.html';
+
+                    window.location.href = redirectUrl;
                 })
-                .catch(err => { showError('SSO authentication successful but unable to load profile'); loadSSOProviders(); });
+                .catch(err => {
+                    showError('SSO authentication successful but unable to load profile');
+                    loadSSOProviders();
+                });
         } else if (error) {
             const errorMessages = {
                 'jwt_not_configured': 'JWT SSO is not configured',
@@ -362,11 +457,13 @@
         const errorDiv = document.getElementById('errorMessage');
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
+        document.getElementById('successMessage').style.display = 'none';
     }
     function showSuccess(message) {
         const successDiv = document.getElementById('successMessage');
         successDiv.textContent = message;
         successDiv.style.display = 'block';
+        document.getElementById('errorMessage').style.display = 'none';
     }
     function hideMessages() {
         document.getElementById('errorMessage').style.display = 'none';

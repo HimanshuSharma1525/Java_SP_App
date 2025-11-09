@@ -6,7 +6,22 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
+        :root {
+            --primary-color: #007bff; /* Professional Blue Accent */
+            --primary-light: #e6f2ff;
+            --text-dark: #2c3e50;
+            --text-medium: #7f8c8d;
+            --bg-page: #f4f7f9; /* Light, clean background */
+            --bg-card: white;
+            --border-color: #e0e0e0;
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,23 +29,26 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-page);
         }
 
+        /* --- Navbar --- */
         .navbar {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            color: white;
-            padding: 20px 40px;
+            background-color: var(--bg-card);
+            color: var(--text-dark);
+            padding: 15px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .navbar-brand {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
         }
 
         .navbar-user {
@@ -45,34 +63,39 @@
 
         .user-email {
             font-size: 14px;
-            opacity: 0.9;
+            color: var(--text-dark);
+            font-weight: 500;
         }
 
         .user-role {
-            font-size: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 4px 12px;
+            font-size: 11px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            padding: 4px 8px;
             border-radius: 12px;
             margin-top: 4px;
             display: inline-block;
+            font-weight: 600;
         }
 
         .btn-logout {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            color: white;
-            padding: 8px 20px;
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 8px 15px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 500;
             transition: all 0.3s;
         }
 
         .btn-logout:hover {
-            background: white;
-            color: #43e97b;
+            background: #ffe0e6; /* Subtle danger hover */
+            border-color: #e74c3c;
+            color: #e74c3c;
         }
 
+        /* --- Main Content --- */
         .container {
             max-width: 1400px;
             margin: 40px auto;
@@ -84,42 +107,47 @@
         }
 
         .page-header h1 {
-            font-size: 32px;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 28px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-weight: 700;
         }
 
         .page-header p {
-            color: #666;
-            font-size: 16px;
+            color: var(--text-medium);
+            font-size: 15px;
         }
 
+        /* --- Tabs --- */
         .tabs {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid var(--border-color);
         }
 
         .tab {
-            padding: 12px 24px;
+            padding: 12px 0;
             background: none;
             border: none;
-            color: #666;
+            color: var(--text-medium);
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .tab.active {
-            color: #43e97b;
-            border-bottom-color: #43e97b;
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
         }
 
         .tab:hover {
-            color: #43e97b;
+            color: var(--primary-color);
         }
 
         .tab-content {
@@ -130,11 +158,13 @@
             display: block;
         }
 
+        /* --- Cards and Grid --- */
         .card {
-            background: white;
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
         }
 
         .card-header {
@@ -142,41 +172,49 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .card-title {
             font-size: 20px;
             font-weight: 600;
-            color: #333;
+            color: var(--text-dark);
         }
 
+        /* --- Buttons --- */
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            background-color: var(--primary-color);
             color: white;
+            box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 233, 123, 0.3);
+            transform: translateY(-1px);
+            background-color: #0056b3;
+            box-shadow: 0 5px 12px rgba(0, 123, 255, 0.5);
         }
 
         .btn-success {
-            background: #4CAF50;
+            background: #28a745;
             color: white;
         }
 
         .btn-danger {
-            background: #f44336;
+            background: #dc3545;
             color: white;
         }
 
@@ -185,46 +223,50 @@
             font-size: 12px;
         }
 
+        /* --- Table --- */
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
         th {
-            background: #f8f9fa;
+            background: var(--bg-page);
             padding: 12px;
             text-align: left;
             font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e0e0e0;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border-color);
         }
 
         td {
             padding: 12px;
             border-bottom: 1px solid #f0f0f0;
+            color: var(--text-dark);
         }
 
         tr:hover {
-            background: #f8f9fa;
+            background: var(--primary-light);
         }
 
         .badge {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .badge-success {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: #d4edda;
+            color: #155724;
         }
 
         .badge-danger {
-            background: #ffebee;
-            color: #c62828;
+            background: #f8d7da;
+            color: #721c24;
         }
 
+        /* --- Modal --- */
         .modal {
             display: none;
             position: fixed;
@@ -232,7 +274,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -243,44 +285,49 @@
         }
 
         .modal-content {
-            background: white;
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: 10px;
             padding: 30px;
             width: 90%;
             max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .modal-header {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;
             margin-bottom: 20px;
-            color: #333;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 14px;
         }
 
         .form-group input {
             width: 100%;
             padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             font-size: 14px;
+            background: var(--bg-page);
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #43e97b;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-light);
+            background: white;
         }
 
         .modal-actions {
@@ -292,8 +339,15 @@
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #999;
+            padding: 50px 20px;
+            color: var(--text-medium);
+            font-size: 16px;
+        }
+
+        .empty-state i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: var(--border-color);
         }
 
         .action-buttons {
@@ -301,68 +355,87 @@
             gap: 8px;
         }
 
+        /* --- Alerts --- */
         .alert {
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .alert-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-left: 4px solid #4CAF50;
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
         }
 
         .alert-error {
-            background: #ffebee;
-            color: #c62828;
-            border-left: 4px solid #f44336;
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
         }
 
+        .alert i {
+            font-size: 16px;
+        }
+
+        /* --- Stats Grid --- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
         .stat-card {
-            background: white;
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: 10px;
             padding: 24px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid #43e97b;
+            box-shadow: var(--shadow-subtle);
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-value {
-            font-size: 36px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
         }
 
         .stat-label {
-            color: #666;
+            color: var(--text-medium);
             font-size: 14px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <div class="navbar-brand">👥 Customer Admin Dashboard</div>
+    <div class="navbar-brand"><i class="fas fa-tachometer-alt"></i> Customer Admin Portal</div>
     <div class="navbar-user">
         <div class="user-info">
             <div class="user-email" id="userEmail">Loading...</div>
-            <div class="user-role">CUSTOMER ADMIN</div>
+            <div class="user-role"><i class="fas fa-crown"></i> CUSTOMER ADMIN</div>
         </div>
-        <button class="btn-logout" onclick="logout()">Logout</button>
+        <button class="btn-logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
     </div>
 </nav>
 
 <div class="container">
     <div class="page-header">
-        <h1>Welcome, Customer Admin</h1>
-        <p>Manage your end users and SSO configurations</p>
+        <h1>Welcome Back!</h1>
+        <p>Your centralized hub to manage end users and SSO integrations for your tenant.</p>
     </div>
 
     <div class="stats-grid">
@@ -374,22 +447,33 @@
             <div class="stat-value" id="activeUsers">0</div>
             <div class="stat-label">Active Users</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-value" id="pendingInvitations">0</div>
+            <div class="stat-label">Pending Invitations</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="activeSSOProtocols">0</div>
+            <div class="stat-label">Active SSO Protocols</div>
+        </div>
     </div>
 
     <div class="tabs">
-        <button class="tab active" onclick="switchTab('endUsers')">End Users</button>
-        <button class="tab" onclick="window.location.href='/sso-settings.html'">SSO Configuration</button>
+        <button class="tab active" onclick="switchTab('endUsers')">
+            <i class="fas fa-users"></i> End Users
+        </button>
+        <button class="tab" onclick="window.location.href='/sso-settings.html'">
+            <i class="fas fa-lock"></i> SSO Configuration
+        </button>
     </div>
 
-    <!-- End Users Tab -->
     <div id="endUsers" class="tab-content active">
         <div id="alertContainer"></div>
 
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">End Users</h2>
+                <h2 class="card-title"><i class="fas fa-user-friends"></i> User Management</h2>
                 <button class="btn btn-primary" onclick="openCreateModal()">
-                    + Add End User
+                    <i class="fas fa-user-plus"></i> Add End User
                 </button>
             </div>
 
@@ -407,7 +491,8 @@
                 <tbody id="endUsersBody">
                 <tr>
                     <td colspan="6" class="empty-state">
-                        Loading end users...
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading end users...</p>
                     </td>
                 </tr>
                 </tbody>
@@ -415,24 +500,26 @@
         </div>
     </div>
 
-    <!-- SSO Configuration Tab -->
     <div id="ssoConfig" class="tab-content">
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">SSO Configuration</h2>
-                <p style="color: #666; font-size: 14px;">Configure SSO providers for your organization</p>
+                <h2 class="card-title"><i class="fas fa-cog"></i> SSO Configuration Overview</h2>
+                <a href="/sso-settings.html" class="btn btn-primary">
+                    <i class="fas fa-tools"></i> Configure SSO
+                </a>
             </div>
 
             <div id="ssoConfigContent">
-                <p style="text-align: center; color: #999; padding: 40px;">
-                    SSO Configuration coming soon...
+                <p style="text-align: center; color: var(--text-medium); padding: 40px;">
+                    <i class="fas fa-info-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                    <br>
+                    Click **Configure SSO** to manage your identity provider settings (JWT, SAML, OAuth).
                 </p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Create/Edit End User Modal -->
 <div id="endUserModal" class="modal">
     <div class="modal-content">
         <h3 class="modal-header" id="modalTitle">Add End User</h3>
@@ -441,27 +528,27 @@
 
             <div class="form-group">
                 <label for="firstName">First Name *</label>
-                <input type="text" id="firstName" required>
+                <input type="text" id="firstName" required placeholder="John">
             </div>
 
             <div class="form-group">
                 <label for="lastName">Last Name *</label>
-                <input type="text" id="lastName" required>
+                <input type="text" id="lastName" required placeholder="Doe">
             </div>
 
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" required>
+                <input type="email" id="email" required placeholder="john.doe@yourcompany.com">
             </div>
 
             <div class="form-group" id="passwordGroup">
                 <label for="password">Password *</label>
-                <input type="password" id="password">
+                <input type="password" id="password" placeholder="Set initial password">
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="btn" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn" onclick="closeModal()"><i class="fas fa-times"></i> Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
             </div>
         </form>
     </div>
@@ -479,8 +566,10 @@
 
     document.getElementById('userEmail').textContent = userEmail;
 
-    // Load end users on page load
+    // Load data on page load
     loadEndUsers();
+    loadSSOStats();
+    // Note: loadPendingInvitations is now handled within loadEndUsers
 
     // Tab switching
     function switchTab(tabName) {
@@ -492,7 +581,8 @@
         });
 
         document.getElementById(tabName).classList.add('active');
-        event.target.classList.add('active');
+        // Find the button element corresponding to the tabName
+        document.querySelector(`.tab[onclick*="${tabName}"]`).classList.add('active');
     }
 
     // Load end users
@@ -526,8 +616,8 @@
             tbody.innerHTML = `
                     <tr>
                         <td colspan="6" class="empty-state">
-                            <div>👤</div>
-                            <p>No end users yet. Click "Add End User" to create one.</p>
+                            <i class="fas fa-users-slash"></i>
+                            <p>No end users have been created yet. Click "Add End User" to get started.</p>
                         </td>
                     </tr>
                 `;
@@ -544,14 +634,14 @@
                             ${user.active ? 'Active' : 'Inactive'}
                         </span>
                     </td>
-                    <td>${new Date().toLocaleDateString()}</td>
+                    <td>${new Date(user.createdAt || Date.now()).toLocaleDateString()}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-small btn-success" onclick="editEndUser(${user.id})">
-                                Edit
+                            <button class="btn btn-small btn-success" onclick="editEndUser(${user.id})" title="Edit User">
+                                <i class="fas fa-pen"></i>
                             </button>
-                            <button class="btn btn-small btn-danger" onclick="deleteEndUser(${user.id})">
-                                Delete
+                            <button class="btn btn-small btn-danger" onclick="deleteEndUser(${user.id})" title="Delete User">
+                                <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
                     </td>
@@ -562,11 +652,37 @@
     function updateStats(endUsers) {
         document.getElementById('totalUsers').textContent = endUsers.length;
         const activeCount = endUsers.filter(u => u.active).length;
+        const pendingCount = endUsers.filter(u => !u.active).length;
+
         document.getElementById('activeUsers').textContent = activeCount;
+        document.getElementById('pendingInvitations').textContent = pendingCount;
+    }
+
+    /**
+     * Fetches SSO configurations and calculates the number of active protocols.
+     */
+    async function loadSSOStats() {
+        try {
+            const response = await fetch('/api/sso/config', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const configs = await response.json();
+                // Filter for protocols where 'enabled' is true
+                const activeCount = configs.filter(c => c.enabled).length;
+                document.getElementById('activeSSOProtocols').textContent = activeCount;
+            } else {
+                document.getElementById('activeSSOProtocols').textContent = 'N/A';
+            }
+        } catch (error) {
+            console.error('Error loading SSO stats:', error);
+            document.getElementById('activeSSOProtocols').textContent = 'Error';
+        }
     }
 
     function openCreateModal() {
-        document.getElementById('modalTitle').textContent = 'Add End User';
+        document.getElementById('modalTitle').textContent = 'Add New End User';
         document.getElementById('endUserForm').reset();
         document.getElementById('userId').value = '';
         document.getElementById('passwordGroup').style.display = 'block';
@@ -583,6 +699,11 @@
     document.getElementById('endUserForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const submitBtn = document.querySelector('#endUserModal .btn-primary');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+
         const userId = document.getElementById('userId').value;
         const isEdit = userId !== '';
 
@@ -593,9 +714,11 @@
             role: 'END_USER'
         };
 
-        if (!isEdit) {
-            formData.password = document.getElementById('password').value;
+        const passwordInput = document.getElementById('password').value;
+        if (!isEdit && passwordInput) {
+            formData.password = passwordInput;
         }
+
 
         try {
             const url = isEdit
@@ -624,20 +747,47 @@
         } catch (error) {
             console.error('Error:', error);
             showAlert('Network error', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save';
         }
     });
 
     async function editEndUser(userId) {
         document.getElementById('modalTitle').textContent = 'Edit End User';
         document.getElementById('userId').value = userId;
+
+        // Hide password group for edit
         document.getElementById('passwordGroup').style.display = 'none';
         document.getElementById('password').required = false;
         document.getElementById('email').readOnly = true;
+
+        // Fetch user data for pre-filling
+        try {
+            const response = await fetch(`/api/customer-admin/end-users/${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const user = await response.json();
+                document.getElementById('firstName').value = user.firstName;
+                document.getElementById('lastName').value = user.lastName;
+                document.getElementById('email').value = user.email;
+            } else {
+                showAlert('Failed to fetch user data for edit.', 'error');
+                return;
+            }
+        } catch(error) {
+            showAlert('Network error fetching user data.', 'error');
+            return;
+        }
+
         document.getElementById('endUserModal').classList.add('show');
     }
 
     async function deleteEndUser(userId) {
-        if (!confirm('Are you sure you want to delete this end user?')) {
+        if (!confirm('Are you sure you want to delete this end user? This action cannot be undone.')) {
             return;
         }
 
@@ -653,7 +803,8 @@
                 showAlert('End user deleted successfully!', 'success');
                 loadEndUsers();
             } else {
-                showAlert('Failed to delete end user', 'error');
+                const error = await response.json();
+                showAlert(error.error || 'Failed to delete end user', 'error');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -664,9 +815,11 @@
     function showAlert(message, type) {
         const alertContainer = document.getElementById('alertContainer');
         const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+        const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
 
         alertContainer.innerHTML = `
                 <div class="alert ${alertClass}">
+                    <i class="fas ${iconClass}"></i>
                     ${message}
                 </div>
             `;

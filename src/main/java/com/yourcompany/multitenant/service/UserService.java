@@ -47,6 +47,26 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Fetch a single user by ID, validating access and role.
+     * Used by CustomerAdminController for edit modal pre-filling.
+     */
+    @Transactional(readOnly = true)
+    public UserDTO getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        // Ensure the current administrator can access this user
+        validateUserAccess(user);
+
+        // Ensure the user has the role expected by the controller context
+        if (user.getRole() != Role.END_USER) {
+            throw new UnauthorizedAccessException("Access denied. User role is not END_USER.");
+        }
+
+        return convertToDTO(user);
+    }
+
     @Transactional
     public UserDTO createCustomerAdmin(CreateUserRequest request) {
         if (request.getTenantSubdomain() == null || request.getTenantSubdomain().isEmpty()) {
@@ -88,8 +108,9 @@ public class UserService {
     public UserDTO createEndUser(CreateUserRequest request) {
         Tenant tenant = tenantService.getCurrentTenant();
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+        // Email must be unique within the current tenant
+        if (userRepository.existsByEmailAndTenant(request.getEmail(), tenant)) {
+            throw new IllegalArgumentException("Email already exists in this tenant");
         }
 
         User user = User.builder()
@@ -113,8 +134,30 @@ public class UserService {
 
         validateUserAccess(user);
 
+        // CustomerAdmin should only be allowed to update END_USERs via this path
+        if (user.getRole() != Role.END_USER) {
+            throw new UnauthorizedAccessException("Cannot modify user with role: " + user.getRole().name());
+        }
+
+        // 1. Update Name Fields
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
+
+        // 2. Update Email (Requires uniqueness check if changed)
+        if (request.getEmail() != null && !request.getEmail().isEmpty() && !user.getEmail().equalsIgnoreCase(request.getEmail())) {
+            // Assume UserRepository has 'existsByEmailAndTenant' matching the unique constraint
+            if (userRepository.existsByEmailAndTenant(request.getEmail(), user.getTenant())) {
+                throw new IllegalArgumentException("Email " + request.getEmail() + " already exists for another user in this tenant.");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        // 3. Update Password (Only if provided)
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        // 4. Update Active Status
         if (request.getActive() != null) user.setActive(request.getActive());
 
         user = userRepository.save(user);
@@ -127,14 +170,22 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         validateUserAccess(user);
+
+        // Safety check: only allow deleting END_USERs
+        if (user.getRole() != Role.END_USER) {
+            throw new UnauthorizedAccessException("Cannot delete user with role: " + user.getRole().name());
+        }
+
         userRepository.delete(user);
     }
 
     private void validateUserAccess(User user) {
         Tenant currentTenant = tenantService.getCurrentTenant();
 
+        // Super Admin can access any user
         if (tenantService.isSuperAdminTenant()) return;
 
+        // Customer Admin can only access users within their own tenant
         if (!user.getTenant().getId().equals(currentTenant.getId())) {
             throw new UnauthorizedAccessException("Cannot access users from different tenant");
         }

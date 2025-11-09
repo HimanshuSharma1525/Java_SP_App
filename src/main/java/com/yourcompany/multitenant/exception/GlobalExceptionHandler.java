@@ -63,4 +63,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred"));
     }
+
+    @ExceptionHandler(DomainAccessException.class)
+    public ResponseEntity<Map<String, String>> handleDomainAccess(DomainAccessException ex) {
+        log.error("Domain access error: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
 }

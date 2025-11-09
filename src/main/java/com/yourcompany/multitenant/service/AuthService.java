@@ -1,9 +1,11 @@
 package com.yourcompany.multitenant.service;
 
 import com.yourcompany.multitenant.config.TenantContext;
+import com.yourcompany.multitenant.config.TenantFilter;
 import com.yourcompany.multitenant.dto.LoginRequest;
 import com.yourcompany.multitenant.dto.LoginResponse;
 import com.yourcompany.multitenant.dto.RegisterRequest;
+import com.yourcompany.multitenant.exception.DomainAccessException;
 import com.yourcompany.multitenant.exception.UnauthorizedAccessException;
 import com.yourcompany.multitenant.model.Role;
 import com.yourcompany.multitenant.model.Tenant;
@@ -33,7 +35,7 @@ public class AuthService {
 
     /**
      * Handles username/password login.
-     * Generates JWT and performs tenant+role validation.
+     * Generates JWT and performs tenant + role validation.
      */
     @Transactional
     public LoginResponse login(LoginRequest request) {
@@ -46,7 +48,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UnauthorizedAccessException("Invalid credentials"));
 
-        // Validate tenant
+        // Validate tenant access
         validateTenantAccess(user);
 
         // Generate token
@@ -70,7 +72,7 @@ public class AuthService {
 
     /**
      * Version of login that also sets JWT as HttpOnly cookie.
-     * This helps align behavior with SSO-based logins.
+     * Helps align with SSO-based logins.
      */
     @Transactional
     public LoginResponse loginWithCookie(LoginRequest request, HttpServletResponse response) {
@@ -80,7 +82,7 @@ public class AuthService {
         jwtCookie.setHttpOnly(true);
         jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(24 * 60 * 60);
+        jwtCookie.setMaxAge(24 * 60 * 60); // 1 day
         response.addCookie(jwtCookie);
 
         log.info("JWT cookie issued for user {}", loginResponse.getEmail());
@@ -88,26 +90,39 @@ public class AuthService {
     }
 
     /**
-     * Validates that a user is logging in through the correct tenant subdomain.
+     * Validates that a user is logging in through the correct tenant or base domain.
      */
     private void validateTenantAccess(User user) {
-        String currentSubdomain = TenantContext.getTenantId();
-        String userSubdomain = user.getTenant().getSubdomain();
+        String currentTenant = TenantContext.getTenantId(); // e.g., SUPERADMIN or tenant1
+        String userSubdomain = user.getTenant().getSubdomain(); // e.g., tenant1
 
-        if (user.getRole() == Role.SUPER_ADMIN && !"superadmin".equals(currentSubdomain)) {
-            throw new UnauthorizedAccessException("Super admin can only login via superadmin subdomain");
-        }
+        log.debug("Validating login for user: {}, role: {}, currentTenant: {}",
+                user.getEmail(), user.getRole(), currentTenant);
 
-        if (user.getRole() == Role.CUSTOMER_ADMIN) {
-            if (!"superadmin".equals(currentSubdomain) && !userSubdomain.equals(currentSubdomain)) {
-                throw new UnauthorizedAccessException("Customer admin can only login via superadmin or their subdomain");
+        // 🟣 SUPER ADMIN — only via base domain
+        if (user.getRole() == Role.SUPER_ADMIN) {
+            if (!TenantFilter.SUPER_ADMIN_ID.equalsIgnoreCase(currentTenant)) {
+                throw new DomainAccessException("Super admin can only login via base domain");
             }
         }
 
-        if (user.getRole() == Role.END_USER && !userSubdomain.equals(currentSubdomain)) {
-            throw new UnauthorizedAccessException(
-                    "End user can only login via their tenant subdomain: " + userSubdomain
-            );
+        // 🏢 CUSTOMER ADMIN — via base domain or their own subdomain
+        else if (user.getRole() == Role.CUSTOMER_ADMIN) {
+            if (!TenantFilter.SUPER_ADMIN_ID.equalsIgnoreCase(currentTenant)
+                    && !userSubdomain.equalsIgnoreCase(currentTenant)) {
+                throw new DomainAccessException(
+                        "Customer admin can only login via base domain or their tenant domain"
+                );
+            }
+        }
+
+        // 👤 END USER — only via their tenant subdomain
+        else if (user.getRole() == Role.END_USER) {
+            if (!userSubdomain.equalsIgnoreCase(currentTenant)) {
+                throw new DomainAccessException(
+                        "End user can only login via their tenant domain: " + userSubdomain
+                );
+            }
         }
     }
 
@@ -127,10 +142,11 @@ public class AuthService {
      */
     @Transactional
     public User register(RegisterRequest request) {
-        String subdomain = TenantContext.getTenantId();
+        String currentTenant = TenantContext.getTenantId();
 
-        if ("superadmin".equals(subdomain)) {
-            throw new UnauthorizedAccessException("Cannot register users via superadmin subdomain");
+        // 🚫 Prevent registration from base domain
+        if (TenantFilter.SUPER_ADMIN_ID.equalsIgnoreCase(currentTenant)) {
+            throw new DomainAccessException("Cannot register users via base domain");
         }
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
