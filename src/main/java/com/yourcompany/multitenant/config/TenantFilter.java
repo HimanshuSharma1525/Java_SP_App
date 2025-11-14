@@ -5,13 +5,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 
 @Slf4j
 @Component
 public class TenantFilter implements Filter {
 
-    public static final String SUPER_ADMIN_ID = "SUPERADMIN";
+    // SUPER ADMIN tenant ID is always "1"
+    public static final String SUPER_ADMIN_ID = "1";
 
     @Value("${app.base.domain:localhost}")
     private String baseDomain;
@@ -22,21 +24,22 @@ public class TenantFilter implements Filter {
 
         HttpServletRequest req = (HttpServletRequest) request;
 
-        // Render sends real domain here
+        // 🟢 REAL DOMAIN FIX FOR RENDER
         String serverName = req.getHeader("X-Forwarded-Host");
         if (serverName == null || serverName.isEmpty()) {
             serverName = req.getServerName();
         }
 
-        log.debug("Resolved server name (after proxy fix): {}", serverName);
+        log.debug("TenantFilter detected server name: {}", serverName);
 
+        // Resolve tenant ID
         String tenantId = resolveTenantId(serverName);
 
         if (tenantId != null) {
+            log.debug("Setting TenantContext to {}", tenantId);
             TenantContext.setTenantId(tenantId);
-            log.debug("Tenant set to {}", tenantId);
         } else {
-            log.warn("Could not determine tenant ID from server name: {}", serverName);
+            log.warn("Could not determine tenant from server name: {}", serverName);
         }
 
         try {
@@ -46,21 +49,28 @@ public class TenantFilter implements Filter {
         }
     }
 
+    // 🟢 Tenant resolver
     private String resolveTenantId(String serverName) {
         if (serverName == null) {
             return null;
         }
 
-        // Super Admin Domain
-        if (isBaseDomain(serverName) || serverName.equals("127.0.0.1")) {
-            log.debug("Base domain detected → SUPERADMIN");
+        // Super Admin handling (base domain)
+        if (isBaseDomain(serverName)) {
+            log.debug("Base domain detected → SUPER ADMIN tenant (1)");
             return SUPER_ADMIN_ID;
         }
 
-        // Tenant domain
+        // Localhost fallback
+        if (serverName.equals("127.0.0.1") || serverName.equalsIgnoreCase("localhost")) {
+            log.debug("Localhost → SUPER ADMIN tenant (1)");
+            return SUPER_ADMIN_ID;
+        }
+
+        // Tenant subdomain
         String subdomain = extractSubdomain(serverName);
         if (subdomain != null && !subdomain.isEmpty()) {
-            log.debug("Tenant subdomain detected → {}", subdomain);
+            log.debug("Subdomain detected → tenant {}", subdomain);
             return subdomain;
         }
 
@@ -72,17 +82,24 @@ public class TenantFilter implements Filter {
     }
 
     private String extractSubdomain(String serverName) {
+        if (serverName.matches("^\\d+\\.\\d+\\.\\d+\\.\\d+$")) {
+            return null; // IP address
+        }
+
         String[] parts = serverName.split("\\.");
         String[] baseParts = baseDomain.split("\\.");
 
-        if (parts.length <= baseParts.length) return null;
+        if (parts.length <= baseParts.length) {
+            return null;
+        }
 
+        // Ensure end matches the base domain
         for (int i = 0; i < baseParts.length; i++) {
             if (!parts[parts.length - baseParts.length + i].equalsIgnoreCase(baseParts[i])) {
                 return null;
             }
         }
 
-        return parts[0];
+        return parts[0]; // return subdomain
     }
 }
