@@ -1,7 +1,7 @@
 -- V2__create_initial_data.sql
 -- Insert super admin tenant
 INSERT INTO tenants (subdomain, name, active)
-VALUES ('', 'Super Admin Organization', true);
+VALUES ('cadmin', 'c Admin Organization', true);
 
 -- Insert super admin user (password: Admin@123)
 -- BCrypt hash for 'Admin@123'
@@ -14,7 +14,7 @@ SELECT
     'SUPER_ADMIN',
     id,
     true
-FROM tenants WHERE subdomain = '';
+FROM tenants WHERE subdomain = 'cadmin';
 
 -- Insert sample customer admin tenants
 INSERT INTO tenants (subdomain, name, active)
